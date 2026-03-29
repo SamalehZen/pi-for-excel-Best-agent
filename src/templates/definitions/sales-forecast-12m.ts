@@ -17,7 +17,7 @@ export const SALES_FORECAST_12M: TemplateDefinition = {
       accentBg: "#A6DDFB",
       accentFg: "#000000",
       alternateBg: "",
-      totalBg: "#F9BC09",
+      totalBg: "#FFF2CE",
       totalFg: "#000000",
     },
     typography: {
