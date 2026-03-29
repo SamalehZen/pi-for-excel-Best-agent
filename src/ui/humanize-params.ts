@@ -737,6 +737,7 @@ function humanizeApplyTemplate(p: Record<string, unknown>): ParamItem[] {
   if (sheet) items.push({ label: "Sheet", value: sheet });
   if (p.header_row) items.push({ label: "Header row", value: str(p.header_row) });
   if (p.data_start_row) items.push({ label: "Data start", value: str(p.data_start_row) });
+  if (p.data_end_row) items.push({ label: "Data end", value: str(p.data_end_row) });
   if (p.total_row) items.push({ label: "Total row", value: str(p.total_row) });
   if (p.title_row) items.push({ label: "Title row", value: str(p.title_row) });
   return items;

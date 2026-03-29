@@ -34,6 +34,7 @@ import {
   type TemplateDefinition,
   type TemplateSummary,
   type TemplateColumn,
+  type TemplateZone,
 } from "../templates/index.js";
 import { getAppStorage } from "@mariozechner/pi-web-ui/dist/storage/app-storage.js";
 
@@ -107,6 +108,22 @@ function getColumnRange(columns: readonly TemplateColumn[], row: number): string
   const firstCol = columns[0].col;
   const lastCol = columns[columns.length - 1].col;
   return `${firstCol}${row}:${lastCol}${row}`;
+}
+
+function getDataSlotRows(zones: readonly TemplateZone[]): number[] {
+  const rows: number[] = [];
+  for (const zone of zones) {
+    if (zone.type === "data" || zone.type === "data_alternate") {
+      if (Array.isArray(zone.rows)) {
+        for (let r = zone.rows[0]; r <= zone.rows[1]; r++) {
+          rows.push(r);
+        }
+      } else {
+        rows.push(zone.rows);
+      }
+    }
+  }
+  return rows;
 }
 
 async function tryLoadUserTemplates(): Promise<TemplateDefinition[]> {
@@ -254,20 +271,12 @@ async function applyFull(
     sheet.load("name");
 
     const titleRow = structure.titleRow;
-    const titleRange = sheet.getRange(`A${titleRow}`);
-    titleRange.values = [[structure.title]];
-    titleRange.format.font.name = typography.titleFontFamily ?? typography.fontFamily;
-    titleRange.format.font.size = typography.titleSize;
-    titleRange.format.font.bold = design.titleBold;
-    titleRange.format.font.color = palette.titleFg;
-    titleRange.format.fill.color = palette.titleBg;
-    if (design.titleRowHeight) {
-      titleRange.format.rowHeight = design.titleRowHeight;
-    }
-
     const lastColLetter = structure.columns.length > 0
       ? structure.columns[structure.columns.length - 1].col
       : "A";
+
+    const titleCell = sheet.getRange(`A${titleRow}`);
+    titleCell.values = [[structure.title]];
     const titleMergeRange = sheet.getRange(`A${titleRow}:${lastColLetter}${titleRow}`);
     titleMergeRange.merge();
     titleMergeRange.format.font.name = typography.titleFontFamily ?? typography.fontFamily;
@@ -275,6 +284,9 @@ async function applyFull(
     titleMergeRange.format.font.bold = design.titleBold;
     titleMergeRange.format.font.color = palette.titleFg;
     titleMergeRange.format.fill.color = palette.titleBg;
+    if (design.titleRowHeight) {
+      titleMergeRange.format.rowHeight = design.titleRowHeight;
+    }
 
     for (const meta of structure.metaFields) {
       const labelCell = sheet.getRange(`${meta.labelCol}${meta.row}`);
@@ -282,11 +294,15 @@ async function applyFull(
       labelCell.format.font.bold = true;
       labelCell.format.fill.color = palette.labelBg;
       labelCell.format.font.color = palette.labelFg;
+      labelCell.format.font.name = typography.fontFamily;
+      labelCell.format.font.size = typography.bodySize;
 
       const valueCell = sheet.getRange(`${meta.valueCol}${meta.row}`);
       valueCell.values = [[meta.placeholder]];
       valueCell.format.fill.color = palette.labelBg;
       valueCell.format.font.color = palette.labelFg;
+      valueCell.format.font.name = typography.fontFamily;
+      valueCell.format.font.size = typography.bodySize;
     }
 
     const metaRows = new Set(structure.metaFields.map((m) => m.row));
@@ -295,28 +311,49 @@ async function applyFull(
       metaRowRange.format.fill.color = palette.labelBg;
     }
 
-    const headerRow = structure.headerRow;
-    for (const col of structure.columns) {
-      const headerCell = sheet.getRange(`${col.col}${headerRow}`);
-      headerCell.values = [[col.header]];
-      headerCell.format.font.bold = true;
-      headerCell.format.fill.color = palette.headerBg;
-      headerCell.format.font.color = palette.headerFg;
-      headerCell.format.font.size = typography.headerSize;
-      headerCell.format.font.name = typography.fontFamily;
-      if (col.alignment) {
-        headerCell.format.horizontalAlignment = col.alignment;
+    const writeColumnHeaders = (row: number) => {
+      for (const col of structure.columns) {
+        const headerCell = sheet.getRange(`${col.col}${row}`);
+        headerCell.values = [[col.header]];
+        headerCell.format.font.bold = true;
+        headerCell.format.fill.color = palette.headerBg;
+        headerCell.format.font.color = palette.headerFg;
+        headerCell.format.font.size = typography.headerSize;
+        headerCell.format.font.name = typography.fontFamily;
+        if (col.alignment) {
+          headerCell.format.horizontalAlignment = col.alignment;
+        }
+      }
+      if (design.headerRowHeight) {
+        const rowRange = sheet.getRange(`A${row}`);
+        rowRange.format.rowHeight = design.headerRowHeight;
+      }
+    };
+
+    writeColumnHeaders(structure.headerRow);
+
+    for (const zone of structure.zones) {
+      const zoneRow = Array.isArray(zone.rows) ? zone.rows[0] : zone.rows;
+      if (zone.type === "column_header" && zoneRow !== structure.headerRow) {
+        writeColumnHeaders(zoneRow);
+      }
+      if (zone.type === "section_header") {
+        const sectionRange = sheet.getRange(`A${zoneRow}:${lastColLetter}${zoneRow}`);
+        sectionRange.format.fill.color = palette.headerBg;
+        sectionRange.format.font.color = palette.headerFg;
+        sectionRange.format.font.bold = true;
+        sectionRange.format.font.name = typography.fontFamily;
       }
     }
-    if (design.headerRowHeight) {
-      const headerRowRange = sheet.getRange(`A${headerRow}`);
-      headerRowRange.format.rowHeight = design.headerRowHeight;
-    }
 
-    const dataStartRow = headerRow + 1;
+    const dataSlotRows = getDataSlotRows(structure.zones);
+    const fallbackStartRow = structure.headerRow + 1;
+
     for (let rowIdx = 0; rowIdx < structure.sampleData.length; rowIdx++) {
       const rowData = structure.sampleData[rowIdx];
-      const currentRow = dataStartRow + rowIdx;
+      const currentRow = rowIdx < dataSlotRows.length
+        ? dataSlotRows[rowIdx]
+        : fallbackStartRow + rowIdx;
 
       for (let colIdx = 0; colIdx < structure.columns.length && colIdx < rowData.length; colIdx++) {
         const col = structure.columns[colIdx];
@@ -349,6 +386,13 @@ async function applyFull(
       }
     }
 
+    if (design.defaultRowHeight) {
+      for (let i = structure.sampleData.length; i < dataSlotRows.length; i++) {
+        const rowRange = sheet.getRange(`A${dataSlotRows[i]}`);
+        rowRange.format.rowHeight = design.defaultRowHeight;
+      }
+    }
+
     if (structure.totalRow) {
       const totalRowNum = structure.totalRow.row;
       if (structure.totalRow.label && structure.totalRow.labelCol) {
@@ -377,7 +421,7 @@ async function applyFull(
 
     await context.sync();
 
-    const endRow = structure.totalRow ? structure.totalRow.row : dataStartRow + structure.sampleData.length - 1;
+    const endRow = structure.totalRow ? structure.totalRow.row : structure.totalRows;
     const address = `A${titleRow}:${lastColLetter}${endRow}`;
 
     return { sheetName: sheet.name, address };
