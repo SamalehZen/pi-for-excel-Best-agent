@@ -1,8 +1,8 @@
-# Pi for Excel
+# HyperFix
 
 Open-source, multi-model AI sidebar add-in for Microsoft Excel. Powered by [Pi](https://pi.dev).
 
-Pi for Excel is an AI agent that lives inside Excel. It reads your workbook, makes changes, and does research — using any model you choose. Bring your own API key or OAuth login for Anthropic, OpenAI, Google Gemini, or GitHub Copilot.
+HyperFix is an AI agent that lives inside Excel. It reads your workbook, makes changes, and does research — using any model you choose. Bring your own API key or OAuth login for Anthropic, OpenAI, Google Gemini, or GitHub Copilot.
 
 ## Features
 
@@ -60,7 +60,7 @@ Pi for Excel is an AI agent that lives inside Excel. It reads your workbook, mak
 
 ## Install
 
-1. Download [`manifest.prod.xml`](https://pi-for-excel.vercel.app/manifest.prod.xml)
+1. Download [`manifest.prod.xml`](https://hyperexcel.vercel.app/manifest.prod.xml)
 2. Add it to Excel — see [**install guide**](docs/install.md) for step-by-step instructions (macOS + Windows)
 3. Click **Open Pi** in the ribbon
 4. Connect a provider (API key or OAuth), or configure a custom OpenAI-compatible gateway in `/settings`
@@ -76,8 +76,8 @@ Pi for Excel is an AI agent that lives inside Excel. It reads your workbook, mak
 ### Setup
 
 ```bash
-git clone https://github.com/tmustier/pi-for-excel.git
-cd pi-for-excel
+git clone https://github.com/SamalehZen/pi-for-excel-Best-agent.git
+cd pi-for-excel-Best-agent
 npm install
 
 # Generate local HTTPS certs (Office.js requires HTTPS)
@@ -99,7 +99,7 @@ Then sideload the dev manifest into Excel:
 ```bash
 cp manifest.xml ~/Library/Containers/com.microsoft.Excel/Data/Documents/wef/
 ```
-Then open Excel → **Insert** → **My Add-ins** → **Pi for Excel**.
+Then open Excel → **Insert** → **My Add-ins** → **HyperFix**.
 
 **Windows** ([Microsoft docs](https://learn.microsoft.com/en-us/office/dev/add-ins/testing/sideload-office-add-ins-for-testing)):
 
@@ -169,7 +169,7 @@ Source-checkout alternatives remain available via `npm run python:bridge:https` 
 
 ## Architecture
 
-Pi for Excel is a single-page Office taskpane add-in built with:
+HyperFix is a single-page Office taskpane add-in built with:
 
 - **[Vite](https://vite.dev/)** — dev server + production bundler
 - **[Lit](https://lit.dev/)** — web components for the sidebar UI
@@ -251,7 +251,7 @@ Users install by downloading `manifest.prod.xml` and uploading it in Excel — t
 
 ## Credits
 
-- [Pi](https://github.com/badlogic/pi-mono) by [@badlogic](https://github.com/badlogic) (Mario Zechner) — the agent framework powering this project. Pi for Excel uses pi-agent-core, pi-ai, and pi-web-ui for the agent loop, LLM abstraction, and session storage.
+- [Pi](https://github.com/badlogic/pi-mono) by [@badlogic](https://github.com/badlogic) (Mario Zechner) — the agent framework powering this project. HyperFix uses pi-agent-core, pi-ai, and pi-web-ui for the agent loop, LLM abstraction, and session storage.
 - [whimsical.ts](https://github.com/mitsuhiko/agent-stuff/blob/main/pi-extensions/whimsical.ts) by [@mitsuhiko](https://github.com/mitsuhiko) (Armin Ronacher) — the rotating "Working…" messages are adapted from his Pi extension, rewritten for a spreadsheet/finance audience.
 
 ## License

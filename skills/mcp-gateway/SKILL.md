@@ -1,7 +1,7 @@
 ---
 name: mcp-gateway
 description: Discover and call tools from configured MCP servers. Use when external capabilities are needed beyond built-in workbook tools.
-compatibility: Requires Pi for Excel integration "mcp_tools" to be enabled and at least one MCP server configured.
+compatibility: Requires HyperFix integration "mcp_tools" to be enabled and at least one MCP server configured.
 metadata:
   integration-id: mcp_tools
   tool-name: mcp

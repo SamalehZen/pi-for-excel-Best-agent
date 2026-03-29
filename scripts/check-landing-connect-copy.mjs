@@ -14,7 +14,7 @@ const LANDING_REQUIRED_SNIPPETS = [
 ];
 
 const LANDING_FORBIDDEN_SNIPPETS = [
-  "git clone https://github.com/tmustier/pi-for-excel.git ~/.pi-for-excel",
+  "git clone https://github.com/SamalehZen/pi-for-excel-Best-agent.git ~/.pi-for-excel-Best-agent",
   "mkcert -install && mkcert localhost",
   "cd ~/.pi-for-excel && npm run proxy:https",
 ];

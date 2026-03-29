@@ -1,13 +1,13 @@
 ---
 name: extending-pi
-description: Plan and build Pi for Excel extensions safely: choose skill vs extension plugin vs connection, create flat SKILL.md skills, and handle API keys without asking users to paste secrets in chat.
-compatibility: Pi for Excel runtime. Plugin = runtime extension module. Assumes access to extensions_manager and skills tools.
+description: Plan and build HyperFix extensions safely: choose skill vs extension plugin vs connection, create flat SKILL.md skills, and handle API keys without asking users to paste secrets in chat.
+compatibility: HyperFix runtime. Plugin = runtime extension module. Assumes access to extensions_manager and skills tools.
 metadata:
   docs: docs/extensions.md
   related: docs/agent-skills-interop.md
 ---
 
-# Extending Pi (Pi for Excel)
+# Extending HyperFix
 
 Use this skill when the user asks to extend Pi, add capabilities, or integrate an external API/tool.
 

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pi for Excel — Login</title>
+  <title>HyperFix — Login</title>
   <link rel="icon" href="/assets/icon-32.png" type="image/png" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -110,7 +110,7 @@
   <div class="card" id="card">
     <div class="logo">π</div>
     <h1 id="title">Login successful!</h1>
-    <p class="subtitle" id="subtitle">Copy the URL below and paste it back in Pi for Excel.</p>
+    <p class="subtitle" id="subtitle">Copy the URL below and paste it back in HyperFix.</p>
     <div class="url-box" id="url-box">
       <label>Your login URL</label>
       <div class="url-text" id="url-text"></div>
@@ -138,7 +138,7 @@
 
       if (!hasCode) {
         titleEl.textContent = 'Waiting for login…';
-        subtitleEl.textContent = 'If you see this page, your login redirect arrived but no authorization code was found. Try logging in again from Pi for Excel.';
+        subtitleEl.textContent = 'If you see this page, your login redirect arrived but no authorization code was found. Try logging in again from HyperFix.';
         document.getElementById('url-box').style.display = 'none';
         copyBtn.style.display = 'none';
         return;

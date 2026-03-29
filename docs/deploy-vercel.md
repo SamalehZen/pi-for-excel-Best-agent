@@ -1,13 +1,13 @@
 # Deploy hosted build on Vercel (maintainers)
 
-Pi for Excel’s taskpane is a static site built by Vite (`dist/`).
+HyperFix’s taskpane is a static site built by Vite (`dist/`).
 
 Vercel is a good default host because it’s free for OSS/hobby usage and handles HTTPS + caching well.
 
 ## One-time setup
 
 1. Create a new Vercel project
-2. Import `tmustier/pi-for-excel`
+2. Import `SamalehZen/pi-for-excel-Best-agent`
 3. Framework preset: **Vite** (or “Other”)
 4. Build settings:
    - **Build Command:** `npm run build`
@@ -48,7 +48,7 @@ The dev manifest (`manifest.xml`) points at `https://localhost:3000`.
 Generate the production manifest with the hosted base URL:
 
 ```bash
-ADDIN_BASE_URL="https://<project>.vercel.app" npm run manifest:prod
+ADDIN_BASE_URL="https://hyperexcel.vercel.app" npm run manifest:prod
 ```
 
 This writes:

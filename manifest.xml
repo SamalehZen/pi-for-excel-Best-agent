@@ -8,13 +8,13 @@
 
   <Id>a1b2c3d4-e5f6-7890-abcd-ef1234567890</Id>
   <Version>1.0.0.0</Version>
-  <ProviderName>Pi for Excel</ProviderName>
+  <ProviderName>HyperFix</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
-  <DisplayName DefaultValue="Pi for Excel" />
-  <Description DefaultValue="Open-source, multi-model AI sidebar add-in for Excel. Powered by Pi." />
+  <DisplayName DefaultValue="HyperFix" />
+  <Description DefaultValue="Open-source, multi-model AI sidebar add-in for Excel. Powered by HyperFix." />
   <IconUrl DefaultValue="https://localhost:3000/assets/icon-32.png" />
   <HighResolutionIconUrl DefaultValue="https://localhost:3000/assets/icon-80.png" />
-  <SupportUrl DefaultValue="https://github.com/tmustier/pi-for-excel/issues/new/choose" />
+  <SupportUrl DefaultValue="https://github.com/SamalehZen/pi-for-excel-Best-agent" />
 
   <Hosts>
     <Host Name="Workbook" />
@@ -72,11 +72,11 @@
         <bt:Url id="TaskpaneUrl" DefaultValue="https://localhost:3000/src/taskpane.html" />
       </bt:Urls>
       <bt:ShortStrings>
-        <bt:String id="GroupLabel" DefaultValue="Pi" />
-        <bt:String id="ButtonLabel" DefaultValue="Open Pi" />
+        <bt:String id="GroupLabel" DefaultValue="HyperFix" />
+        <bt:String id="ButtonLabel" DefaultValue="Open HyperFix" />
       </bt:ShortStrings>
       <bt:LongStrings>
-        <bt:String id="ButtonDesc" DefaultValue="Open the Pi AI assistant sidebar" />
+        <bt:String id="ButtonDesc" DefaultValue="Open the HyperFix AI assistant sidebar" />
       </bt:LongStrings>
     </Resources>
   </VersionOverrides>

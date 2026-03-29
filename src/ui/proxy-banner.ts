@@ -8,7 +8,7 @@
 import { AlertTriangle, Check, Copy, lucide } from "./lucide-icons.js";
 
 const PROXY_COMMAND = "npx pi-for-excel-proxy";
-const INSTALL_GUIDE_URL = "https://pi.dev/excel#connect";
+const INSTALL_GUIDE_URL = "https://github.com/SamalehZen/pi-for-excel-Best-agent/blob/main/docs/install.md";
 
 export type ProxyBannerState = "detected" | "not-detected" | "unknown";
 

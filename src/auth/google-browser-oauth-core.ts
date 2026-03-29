@@ -227,7 +227,7 @@ async function loginGoogleOAuth(
     url: authUrl.toString(),
     instructions:
       "After sign-in, your browser will show a page that says \"can't be reached\" \u2014 that's expected! " +
-      "Copy the full URL from the browser address bar and paste it back in Pi for Excel.",
+      "Copy the full URL from the browser address bar and paste it back in HyperFix.",
   });
 
   if (callbacks.signal?.aborted) {

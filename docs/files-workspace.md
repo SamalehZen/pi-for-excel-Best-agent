@@ -53,7 +53,7 @@ When `showDirectoryPicker` is available:
 
 ## Related
 
-- [PR #356](https://github.com/tmustier/pi-for-excel/pull/356) — Phase 2 dual-source connected-folder sections
-- [PR #361](https://github.com/tmustier/pi-for-excel/pull/361) — Hide connect-folder action when unsupported
-- [PR #362](https://github.com/tmustier/pi-for-excel/pull/362) — Centralize connect-folder button state
-- [Issue #360](https://github.com/tmustier/pi-for-excel/issues/360) — Decision: keep feature, hide when unsupported
+- [PR #356](https://github.com/SamalehZen/pi-for-excel-Best-agent/pull/356) — Phase 2 dual-source connected-folder sections
+- [PR #361](https://github.com/SamalehZen/pi-for-excel-Best-agent/pull/361) — Hide connect-folder action when unsupported
+- [PR #362](https://github.com/SamalehZen/pi-for-excel-Best-agent/pull/362) — Centralize connect-folder button state
+- [Issue #360](https://github.com/SamalehZen/pi-for-excel-Best-agent/issues/360) — Decision: keep feature, hide when unsupported

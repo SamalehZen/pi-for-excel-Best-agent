@@ -232,7 +232,7 @@ const sampleLines = [
   "# Context Management Policy",
   "",
   "**Status:** Active policy (2026-02-12)",
-  "**Scope:** How Pi for Excel builds and manages context",
+  "**Scope:** How HyperFix builds and manages context",
   "",
   "---",
   "",
