@@ -1008,13 +1008,21 @@ export function isSkillsErrorDetails(value: unknown): value is SkillsErrorDetail
 export function isApplyTemplateListDetails(value: unknown): value is ApplyTemplateListDetails {
   if (!isRecord(value)) return false;
   if (value.kind !== "apply_template_list") return false;
-  return typeof value.count === "number" && Array.isArray(value.templateIds);
+  return (
+    typeof value.count === "number" &&
+    Array.isArray(value.templateIds) &&
+    value.templateIds.every((v: unknown) => typeof v === "string")
+  );
 }
 
 export function isApplyTemplatePreviewDetails(value: unknown): value is ApplyTemplatePreviewDetails {
   if (!isRecord(value)) return false;
   if (value.kind !== "apply_template_preview") return false;
-  return typeof value.templateId === "string" && typeof value.templateName === "string";
+  return (
+    typeof value.templateId === "string" &&
+    typeof value.templateName === "string" &&
+    typeof value.category === "string"
+  );
 }
 
 export function isApplyTemplateApplyDetails(value: unknown): value is ApplyTemplateApplyDetails {
@@ -1023,7 +1031,11 @@ export function isApplyTemplateApplyDetails(value: unknown): value is ApplyTempl
   return (
     typeof value.templateId === "string" &&
     typeof value.templateName === "string" &&
-    (value.mode === "full" || value.mode === "design_only")
+    (value.mode === "full" || value.mode === "design_only") &&
+    isOptionalString(value.address) &&
+    isOptionalNumber(value.detectedTitleRow) &&
+    isOptionalNumber(value.detectedHeaderRow) &&
+    isOptionalNumber(value.detectedTotalRow)
   );
 }
 

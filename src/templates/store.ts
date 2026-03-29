@@ -19,13 +19,49 @@ export interface TemplateSettingsStore {
   set: (key: string, value: unknown) => Promise<void>;
 }
 
+function isValidStoredTemplate(t: unknown): t is TemplateDefinition {
+  if (!isRecord(t)) return false;
+  if (typeof t.id !== "string" || typeof t.name !== "string") return false;
+  if (typeof t.category !== "string" || typeof t.description !== "string") return false;
+  if (t.sourceKind !== "bundled" && t.sourceKind !== "user") return false;
+
+  if (!isRecord(t.design)) return false;
+  if (typeof t.design.alternatingRows !== "boolean" || typeof t.design.titleBold !== "boolean") return false;
+
+  if (!isRecord(t.design.palette)) return false;
+  const p = t.design.palette;
+  if (
+    typeof p.titleBg !== "string" || typeof p.titleFg !== "string" ||
+    typeof p.headerBg !== "string" || typeof p.headerFg !== "string" ||
+    typeof p.labelBg !== "string" || typeof p.labelFg !== "string" ||
+    typeof p.accentBg !== "string" || typeof p.accentFg !== "string" ||
+    typeof p.alternateBg !== "string" ||
+    typeof p.totalBg !== "string" || typeof p.totalFg !== "string"
+  ) return false;
+
+  if (!isRecord(t.design.typography)) return false;
+  const ty = t.design.typography;
+  if (
+    typeof ty.fontFamily !== "string" ||
+    typeof ty.titleSize !== "number" || typeof ty.sectionHeaderSize !== "number" ||
+    typeof ty.headerSize !== "number" || typeof ty.bodySize !== "number"
+  ) return false;
+
+  if (!isRecord(t.structure)) return false;
+  const s = t.structure;
+  if (typeof s.title !== "string" || typeof s.titleRow !== "number") return false;
+  if (typeof s.headerRow !== "number" || typeof s.columnSpan !== "string") return false;
+  if (typeof s.totalRows !== "number") return false;
+  if (!Array.isArray(s.columns) || !Array.isArray(s.metaFields)) return false;
+  if (!Array.isArray(s.sampleData) || !Array.isArray(s.zones)) return false;
+
+  return true;
+}
+
 function parseStoredTemplates(raw: unknown): TemplateDefinition[] {
   if (!isRecord(raw) || raw.version !== 1) return [];
   if (!Array.isArray(raw.templates)) return [];
-  return (raw.templates as unknown[]).filter(
-    (t): t is TemplateDefinition =>
-      isRecord(t) && typeof t.id === "string" && typeof t.name === "string",
-  );
+  return (raw.templates as unknown[]).filter(isValidStoredTemplate);
 }
 
 export async function loadUserTemplates(
@@ -48,7 +84,8 @@ export async function addUserTemplate(
   template: TemplateDefinition,
 ): Promise<void> {
   const existing = await loadUserTemplates(settings);
-  const idx = existing.findIndex((t) => t.id === template.id);
+  const needle = template.id.toLowerCase();
+  const idx = existing.findIndex((t) => t.id.toLowerCase() === needle);
   if (idx >= 0) existing[idx] = template;
   else existing.push(template);
   await saveUserTemplates(settings, existing);
@@ -59,7 +96,8 @@ export async function removeUserTemplate(
   templateId: string,
 ): Promise<boolean> {
   const existing = await loadUserTemplates(settings);
-  const idx = existing.findIndex((t) => t.id === templateId);
+  const needle = templateId.toLowerCase();
+  const idx = existing.findIndex((t) => t.id.toLowerCase() === needle);
   if (idx < 0) return false;
   existing.splice(idx, 1);
   await saveUserTemplates(settings, existing);

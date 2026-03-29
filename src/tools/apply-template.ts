@@ -344,6 +344,13 @@ async function applyFull(
         sectionRange.format.font.bold = true;
         sectionRange.format.font.name = typography.fontFamily;
       }
+      if (zone.type === "accent") {
+        const accentRange = sheet.getRange(`A${zoneRow}:${lastColLetter}${zoneRow}`);
+        accentRange.format.fill.color = palette.accentBg;
+        accentRange.format.font.color = palette.accentFg;
+        accentRange.format.font.bold = true;
+        accentRange.format.font.name = typography.fontFamily;
+      }
     }
 
     const dataSlotRows = getDataSlotRows(structure.zones);
@@ -544,20 +551,20 @@ async function applyDesignOnly(
     const totalRow = params.total_row ?? detected.totalRow;
 
     const usedRange = sheet.getUsedRange();
-    usedRange.load("columnCount,rowIndex,rowCount");
+    usedRange.load("columnIndex,columnCount,rowIndex,rowCount");
     await context.sync();
 
-    const lastColIdx = usedRange.columnCount;
-    const lastColLetter = indexToColLetter(lastColIdx);
+    const firstColLetter = indexToColLetter(usedRange.columnIndex + 1);
+    const lastColLetter = indexToColLetter(usedRange.columnIndex + usedRange.columnCount);
     const firstUsedRow = usedRange.rowIndex + 1;
     const lastUsedRow = firstUsedRow + usedRange.rowCount - 1;
 
-    const allRange = sheet.getRange(`A${firstUsedRow}:${lastColLetter}${lastUsedRow}`);
+    const allRange = sheet.getRange(`${firstColLetter}${firstUsedRow}:${lastColLetter}${lastUsedRow}`);
     allRange.format.font.name = typography.fontFamily;
     allRange.format.font.size = typography.bodySize;
 
     if (titleRow) {
-      const titleRange = sheet.getRange(`A${titleRow}:${lastColLetter}${titleRow}`);
+      const titleRange = sheet.getRange(`${firstColLetter}${titleRow}:${lastColLetter}${titleRow}`);
       titleRange.format.font.name = typography.titleFontFamily ?? typography.fontFamily;
       titleRange.format.font.size = typography.titleSize;
       titleRange.format.font.bold = design.titleBold;
@@ -570,14 +577,14 @@ async function applyDesignOnly(
 
     if (titleRow && headerRow && headerRow - titleRow > 1) {
       for (let r = titleRow + 1; r < headerRow; r++) {
-        const metaRange = sheet.getRange(`A${r}:${lastColLetter}${r}`);
+        const metaRange = sheet.getRange(`${firstColLetter}${r}:${lastColLetter}${r}`);
         metaRange.format.fill.color = palette.labelBg;
         metaRange.format.font.color = palette.labelFg;
       }
     }
 
     if (headerRow) {
-      const headerRange = sheet.getRange(`A${headerRow}:${lastColLetter}${headerRow}`);
+      const headerRange = sheet.getRange(`${firstColLetter}${headerRow}:${lastColLetter}${headerRow}`);
       headerRange.format.font.bold = true;
       headerRange.format.fill.color = palette.headerBg;
       headerRange.format.font.color = palette.headerFg;
@@ -591,7 +598,7 @@ async function applyDesignOnly(
     if (dataStartRow && dataEndRow && design.alternatingRows && palette.alternateBg) {
       for (let r = dataStartRow; r <= dataEndRow; r++) {
         if ((r - dataStartRow) % 2 === 1) {
-          const rowRange = sheet.getRange(`A${r}:${lastColLetter}${r}`);
+          const rowRange = sheet.getRange(`${firstColLetter}${r}:${lastColLetter}${r}`);
           rowRange.format.fill.color = palette.alternateBg;
         }
       }
@@ -605,33 +612,32 @@ async function applyDesignOnly(
     }
 
     if (totalRow) {
-      const totalRange = sheet.getRange(`A${totalRow}:${lastColLetter}${totalRow}`);
+      const totalRange = sheet.getRange(`${firstColLetter}${totalRow}:${lastColLetter}${totalRow}`);
       totalRange.format.font.bold = true;
       totalRange.format.fill.color = palette.totalBg;
       totalRange.format.font.color = palette.totalFg;
     }
 
+    const lastColIdx = usedRange.columnIndex + usedRange.columnCount;
+    const firstColIdx = usedRange.columnIndex + 1;
+
     for (const col of template.structure.columns) {
+      const colIdx = colLetterToIndex(col.col);
+      if (colIdx < firstColIdx || colIdx > lastColIdx) continue;
       if (col.width) {
-        const colIdx = colLetterToIndex(col.col);
-        if (colIdx <= lastColIdx) {
-          const colRange = sheet.getRange(`${col.col}:${col.col}`);
-          colRange.format.columnWidth = col.width * 7.2;
-        }
+        const colRange = sheet.getRange(`${col.col}:${col.col}`);
+        colRange.format.columnWidth = col.width * 7.2;
       }
       if (col.isAccent && dataStartRow && dataEndRow) {
-        const colIdx = colLetterToIndex(col.col);
-        if (colIdx <= lastColIdx) {
-          const accentRange = sheet.getRange(`${col.col}${dataStartRow}:${col.col}${dataEndRow}`);
-          accentRange.format.fill.color = palette.accentBg;
-          accentRange.format.font.color = palette.accentFg;
-        }
+        const accentRange = sheet.getRange(`${col.col}${dataStartRow}:${col.col}${dataEndRow}`);
+        accentRange.format.fill.color = palette.accentBg;
+        accentRange.format.font.color = palette.accentFg;
       }
     }
 
     await context.sync();
 
-    const address = `A${firstUsedRow}:${lastColLetter}${lastUsedRow}`;
+    const address = `${firstColLetter}${firstUsedRow}:${lastColLetter}${lastUsedRow}`;
     return {
       sheetName: sheet.name,
       address,
@@ -741,15 +747,18 @@ export function createApplyTemplateTool(): AgentTool<typeof schema, ApplyTemplat
 
         const result = await executeApply(toolCallId, params);
 
+        const isError = result.details?.templateName === "";
         await finalizeMutationOperation(mutationFinalizeDependencies, {
           auditEntry: {
             toolName: "apply_template",
             toolCallId,
-            blocked: false,
-            outputAddress: result.details?.address ?? "",
+            blocked: isError,
+            outputAddress: isError ? (params.sheet ?? "") : (result.details?.address ?? ""),
             changedCount: 0,
             changes: [],
-            summary: `applied template "${params.template_id ?? "unknown"}" (${params.mode ?? "full"} mode)`,
+            summary: isError
+              ? `error: template "${params.template_id ?? "unknown"}" not applied`
+              : `applied template "${params.template_id ?? "unknown"}" (${params.mode ?? "full"} mode)`,
           },
         });
 
