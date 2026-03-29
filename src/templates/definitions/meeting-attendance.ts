@@ -1,0 +1,70 @@
+import type { TemplateDefinition } from "../types.js";
+
+export const MEETING_ATTENDANCE: TemplateDefinition = {
+  id: "meeting-attendance",
+  name: "Meeting Attendance",
+  category: "attendance",
+  description:
+    "Record meeting attendance with employee details, positions, departments, and attendance status.",
+  design: {
+    palette: {
+      titleBg: "#2763E0",
+      titleFg: "#E7C8FF",
+      headerBg: "#2763E0",
+      headerFg: "#FFFFFF",
+      labelBg: "#CFDFFF",
+      labelFg: "#323232",
+      accentBg: "#E7C8FF",
+      accentFg: "#323232",
+      alternateBg: "",
+      totalBg: "#2763E0",
+      totalFg: "#FFFFFF",
+    },
+    typography: {
+      fontFamily: "Calibri",
+      titleFontFamily: "Calibri",
+      titleSize: 47,
+      sectionHeaderSize: 42,
+      headerSize: 10,
+      bodySize: 10,
+    },
+    alternatingRows: false,
+    titleBold: true,
+    titleRowHeight: 60,
+    defaultRowHeight: 20,
+    headerRowHeight: 24,
+  },
+  structure: {
+    title: "Meeting Attendance",
+    titleRow: 1,
+    metaFields: [
+      { label: "Date:", placeholder: "01/15/2026", row: 2, labelCol: "A", valueCol: "B" },
+      { label: "Time:", placeholder: "10:00 AM", row: 2, labelCol: "C", valueCol: "D" },
+      { label: "Venue:", placeholder: "Conference Room A", row: 3, labelCol: "A", valueCol: "B" },
+      { label: "Topic:", placeholder: "Quarterly Review", row: 3, labelCol: "C", valueCol: "D" },
+    ],
+    headerRow: 5,
+    columns: [
+      { header: "Employee Name", col: "A", width: 24, alignment: "Left", isAccent: true },
+      { header: "Position", col: "B", width: 20, alignment: "Left" },
+      { header: "Team/Department", col: "C", width: 20, alignment: "Left" },
+      { header: "Attendance", col: "D", width: 14, alignment: "Center" },
+    ],
+    sampleData: [
+      ["Jane Smith", "Senior Analyst", "Finance", "Present"],
+      ["John Doe", "Marketing Lead", "Marketing", "Present"],
+      ["Alice Johnson", "Developer", "Engineering", "Absent"],
+      ["Bob Williams", "Designer", "Product", "Present"],
+    ],
+    zones: [
+      { type: "title", rows: 1 },
+      { type: "meta", rows: [2, 3] },
+      { type: "spacer", rows: 4 },
+      { type: "column_header", rows: 5 },
+      { type: "data", rows: [6, 15] },
+    ],
+    columnSpan: "A:D",
+    totalRows: 15,
+  },
+  sourceKind: "bundled",
+};
