@@ -1,5 +1,11 @@
 export const GALLERY_CHANNEL = "pi.template-gallery.v1";
 
+export const GALLERY_ALLOWED_ORIGINS = new Set([
+  "https://localhost:3000",
+  "http://localhost:3000",
+  "https://hyperexcel.vercel.app",
+]);
+
 export type GalleryMessageDirection = "host_to_gallery" | "gallery_to_host";
 
 export interface GalleryAnalyzeRequest {
@@ -78,4 +84,18 @@ export function isGalleryToHostMessage(data: unknown): data is GalleryToHostMess
   if (typeof data !== "object" || data === null) return false;
   const msg = data as Record<string, unknown>;
   return msg.channel === GALLERY_CHANNEL && msg.direction === "gallery_to_host";
+}
+
+function resolveOwnOrigin(): string {
+  try {
+    return window.location.origin;
+  } catch {
+    return "";
+  }
+}
+
+export function isAllowedGalleryOrigin(origin: string): boolean {
+  if (GALLERY_ALLOWED_ORIGINS.has(origin)) return true;
+  const own = resolveOwnOrigin();
+  return own.length > 0 && origin === own;
 }

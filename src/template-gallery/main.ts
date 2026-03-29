@@ -5,6 +5,7 @@ import { findRecommendedTemplates, type DataAnalysisHints } from "./template-cat
 import {
   GALLERY_CHANNEL,
   isHostToGalleryMessage,
+  isAllowedGalleryOrigin,
   type GalleryToHostMessage,
 } from "./bridge.js";
 
@@ -14,9 +15,20 @@ const root: HTMLElement = galleryRoot;
 
 let currentRecommendedIds: string[] = [];
 
+const hostOrigin: string = (() => {
+  try {
+    if (window.parent && window.parent !== window) {
+      return window.location.origin;
+    }
+  } catch {
+    // cross-origin parent — fall back to own origin
+  }
+  return window.location.origin;
+})();
+
 function sendToHost(message: GalleryToHostMessage): void {
   if (window.parent && window.parent !== window) {
-    window.parent.postMessage(message, "*");
+    window.parent.postMessage(message, hostOrigin);
   }
 }
 
@@ -62,6 +74,7 @@ function showGallery(recommendedIds: string[]): void {
 }
 
 window.addEventListener("message", (event: MessageEvent) => {
+  if (typeof event.origin === "string" && !isAllowedGalleryOrigin(event.origin)) return;
   if (!isHostToGalleryMessage(event.data)) return;
 
   const msg = event.data;

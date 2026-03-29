@@ -1,6 +1,7 @@
 import {
   GALLERY_CHANNEL,
   isGalleryToHostMessage,
+  isAllowedGalleryOrigin,
   type HostToGalleryMessage,
   type GalleryToHostMessage,
 } from "../template-gallery/bridge.js";
@@ -17,16 +18,25 @@ interface GalleryHostOptions {
 let activeOverlay: HTMLDivElement | null = null;
 let activeIframe: HTMLIFrameElement | null = null;
 let pendingMessage: HostToGalleryMessage | null = null;
+let cleanupListeners: (() => void) | null = null;
+
+function getIframeOrigin(): string {
+  return window.location.origin;
+}
 
 function sendToGallery(message: HostToGalleryMessage): void {
   if (activeIframe?.contentWindow) {
-    activeIframe.contentWindow.postMessage(message, "*");
+    activeIframe.contentWindow.postMessage(message, getIframeOrigin());
   } else {
     pendingMessage = message;
   }
 }
 
-function removeGalleryOverlay(): void {
+function teardown(): void {
+  if (cleanupListeners) {
+    cleanupListeners();
+    cleanupListeners = null;
+  }
   if (activeOverlay) {
     activeOverlay.remove();
     activeOverlay = null;
@@ -47,7 +57,7 @@ export function dismissTemplateGallery(): void {
       kind: "dismiss",
     });
   }
-  removeGalleryOverlay();
+  teardown();
 }
 
 export function showTemplateGallery(options: GalleryHostOptions): void {
@@ -81,7 +91,13 @@ export function showTemplateGallery(options: GalleryHostOptions): void {
   activeOverlay = overlay;
   activeIframe = iframe;
 
+  const closeGallery = (notifyClosed: boolean): void => {
+    teardown();
+    if (notifyClosed) options.onClosed?.();
+  };
+
   const messageHandler = (event: MessageEvent): void => {
+    if (typeof event.origin === "string" && !isAllowedGalleryOrigin(event.origin)) return;
     if (!isGalleryToHostMessage(event.data)) return;
     const msg: GalleryToHostMessage = event.data;
 
@@ -117,14 +133,11 @@ export function showTemplateGallery(options: GalleryHostOptions): void {
 
       case "template_selected":
         options.onTemplateSelected(msg.templateId, msg.xlsxFile, msg.templateName);
-        removeGalleryOverlay();
-        window.removeEventListener("message", messageHandler);
+        teardown();
         break;
 
       case "closed":
-        removeGalleryOverlay();
-        window.removeEventListener("message", messageHandler);
-        options.onClosed?.();
+        closeGallery(true);
         break;
 
       case "analysis_done":
@@ -132,27 +145,28 @@ export function showTemplateGallery(options: GalleryHostOptions): void {
     }
   };
 
-  window.addEventListener("message", messageHandler);
-
   const onEscape = (e: KeyboardEvent): void => {
     if (e.key === "Escape" && isTemplateGalleryOpen()) {
       e.preventDefault();
-      dismissTemplateGallery();
-      window.removeEventListener("message", messageHandler);
-      window.removeEventListener("keydown", onEscape);
-      options.onClosed?.();
+      closeGallery(true);
     }
   };
-  window.addEventListener("keydown", onEscape);
 
-  overlay.addEventListener("click", (e) => {
+  const onBackdropClick = (e: MouseEvent): void => {
     if (e.target === overlay) {
-      dismissTemplateGallery();
-      window.removeEventListener("message", messageHandler);
-      window.removeEventListener("keydown", onEscape);
-      options.onClosed?.();
+      closeGallery(true);
     }
-  });
+  };
+
+  window.addEventListener("message", messageHandler);
+  window.addEventListener("keydown", onEscape);
+  overlay.addEventListener("click", onBackdropClick);
+
+  cleanupListeners = () => {
+    window.removeEventListener("message", messageHandler);
+    window.removeEventListener("keydown", onEscape);
+    overlay.removeEventListener("click", onBackdropClick);
+  };
 
   document.body.appendChild(overlay);
 }

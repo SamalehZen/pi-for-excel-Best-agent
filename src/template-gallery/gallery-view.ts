@@ -75,10 +75,6 @@ function createExpandedView(
   const overlay = document.createElement("div");
   overlay.className = "gallery-expanded";
 
-  overlay.addEventListener("click", (e) => {
-    if (e.target === overlay) onClose();
-  });
-
   const card = document.createElement("div");
   card.className = "gallery-expanded__card";
 
@@ -138,14 +134,12 @@ function createExpandedView(
   cancelBtn.className = "gallery-expanded__btn";
   cancelBtn.textContent = "Cancel";
   cancelBtn.type = "button";
-  cancelBtn.addEventListener("click", onClose);
   actions.appendChild(cancelBtn);
 
   const applyBtn = document.createElement("button");
   applyBtn.className = "gallery-expanded__btn gallery-expanded__btn--primary";
   applyBtn.textContent = "Apply Template";
   applyBtn.type = "button";
-  applyBtn.addEventListener("click", () => onApply(template));
   actions.appendChild(applyBtn);
 
   body.appendChild(actions);
@@ -155,11 +149,28 @@ function createExpandedView(
   const onEscape = (e: KeyboardEvent) => {
     if (e.key === "Escape") {
       e.preventDefault();
-      onClose();
       document.removeEventListener("keydown", onEscape);
+      onClose();
     }
   };
   document.addEventListener("keydown", onEscape);
+
+  const cleanupAndClose = (): void => {
+    document.removeEventListener("keydown", onEscape);
+    onClose();
+  };
+
+  const cleanupAndApply = (): void => {
+    document.removeEventListener("keydown", onEscape);
+    onApply(template);
+  };
+
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) cleanupAndClose();
+  });
+
+  cancelBtn.addEventListener("click", cleanupAndClose);
+  applyBtn.addEventListener("click", cleanupAndApply);
 
   return overlay;
 }

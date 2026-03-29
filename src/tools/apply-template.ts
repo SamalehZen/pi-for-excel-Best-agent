@@ -777,7 +777,7 @@ export function createApplyTemplateTool(): AgentTool<typeof schema, ApplyTemplat
     label: "Apply Template",
     description:
       "List, preview, and apply design templates to worksheets. " +
-      "10 bundled templates (timesheet, attendance, scorecard, forecast, contest tracker, daily report, lead tracking, schedule, resource planning, work planner, goal tracking). " +
+      "10 bundled templates (timesheet, attendance, forecast, contest tracker, daily report, lead tracking, schedule, resource planning, work planner, goal tracking). " +
       'Mode "full" creates complete structure + sample data + formatting on a blank sheet. ' +
       'Mode "design_only" detects existing data layout and applies only visual formatting.',
     parameters: schema,
