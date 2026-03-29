@@ -47,8 +47,8 @@ function StringEnum<T extends string[]>(values: [...T], opts?: { description?: s
 
 const schema = Type.Object({
   action: StringEnum(
-    ["list", "preview", "apply"],
-    { description: "list = show available templates, preview = show template design details, apply = apply template to sheet." },
+    ["list", "preview", "apply", "gallery"],
+    { description: "list = show available templates, preview = show template design details, apply = apply template to sheet, gallery = open visual template gallery for user selection." },
   ),
   template_id: Type.Optional(
     Type.String({ description: "Template ID (required for preview/apply). Use list to see available IDs." }),
@@ -215,6 +215,55 @@ async function executeList(): Promise<AgentToolResult<ApplyTemplateListDetails>>
       templateIds: templates.map((t) => t.id),
     },
   };
+}
+
+async function executeGallery(): Promise<AgentToolResult<ApplyTemplateListDetails>> {
+  const userTemplates = await tryLoadUserTemplates();
+  const templates = listTemplates(userTemplates.length > 0 ? userTemplates : undefined);
+
+  try {
+    const { showTemplateGallery } = await import("../ui/template-gallery-host.js");
+    const galleryResult = await new Promise<{ templateId: string; xlsxFile: string; templateName: string } | null>((resolve) => {
+      showTemplateGallery({
+        onTemplateSelected: (templateId, xlsxFile, templateName) => {
+          resolve({ templateId, xlsxFile, templateName });
+        },
+        onClosed: () => {
+          resolve(null);
+        },
+      });
+    });
+
+    if (!galleryResult) {
+      return {
+        content: [{ type: "text", text: "Template gallery closed without selection." }],
+        details: {
+          kind: "apply_template_list",
+          count: templates.length,
+          templateIds: templates.map((t) => t.id),
+        },
+      };
+    }
+
+    return {
+      content: [{ type: "text", text: `User selected template **"${galleryResult.templateName}"** (ID: \`${galleryResult.templateId}\`). Use \`action: "apply"\` with \`template_id: "${galleryResult.templateId}"\` to apply it.` }],
+      details: {
+        kind: "apply_template_list",
+        count: templates.length,
+        templateIds: templates.map((t) => t.id),
+      },
+    };
+  } catch {
+    const table = buildTemplateListTable(templates);
+    return {
+      content: [{ type: "text", text: `Gallery UI unavailable. Showing template list instead.\n\n**${templates.length} templates available:**\n\n${table}` }],
+      details: {
+        kind: "apply_template_list",
+        count: templates.length,
+        templateIds: templates.map((t) => t.id),
+      },
+    };
+  }
 }
 
 async function executePreview(params: Params): Promise<AgentToolResult<ApplyTemplatePreviewDetails>> {
@@ -728,7 +777,7 @@ export function createApplyTemplateTool(): AgentTool<typeof schema, ApplyTemplat
     label: "Apply Template",
     description:
       "List, preview, and apply design templates to worksheets. " +
-      "6 bundled templates (timesheet, attendance, scorecard, forecast, contest tracker, daily report). " +
+      "10 bundled templates (timesheet, attendance, forecast, contest tracker, daily report, lead tracking, schedule, resource planning, work planner, goal tracking). " +
       'Mode "full" creates complete structure + sample data + formatting on a blank sheet. ' +
       'Mode "design_only" detects existing data layout and applies only visual formatting.',
     parameters: schema,
@@ -739,6 +788,10 @@ export function createApplyTemplateTool(): AgentTool<typeof schema, ApplyTemplat
       try {
         if (params.action === "list") {
           return await executeList();
+        }
+
+        if (params.action === "gallery") {
+          return await executeGallery();
         }
 
         if (params.action === "preview") {
