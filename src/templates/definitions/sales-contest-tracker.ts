@@ -1,0 +1,83 @@
+import type { TemplateDefinition } from "../types.js";
+
+export const SALES_CONTEST_TRACKER: TemplateDefinition = {
+  id: "sales-contest-tracker",
+  name: "Sales Contest Tracker",
+  category: "sales",
+  description:
+    "Compare two sales teams side-by-side tracking leads generated, deals closed, and revenue for a contest period.",
+  design: {
+    palette: {
+      titleBg: "#0433FF",
+      titleFg: "#FFFFFF",
+      headerBg: "#393939",
+      headerFg: "#FFFFFF",
+      labelBg: "#E1E1E1",
+      labelFg: "#000000",
+      accentBg: "#ABFF40",
+      accentFg: "#000000",
+      alternateBg: "",
+      totalBg: "#393939",
+      totalFg: "#FFFFFF",
+    },
+    typography: {
+      fontFamily: "Helvetica",
+      titleFontFamily: "Helvetica",
+      titleSize: 56,
+      sectionHeaderSize: 14,
+      headerSize: 11,
+      bodySize: 11,
+    },
+    alternatingRows: false,
+    titleBold: true,
+    titleRowHeight: 72,
+    defaultRowHeight: 20,
+    headerRowHeight: 24,
+  },
+  structure: {
+    title: "Sales Contest Tracker",
+    titleRow: 1,
+    metaFields: [
+      { label: "Period:", placeholder: "Q1 2026", row: 2, labelCol: "A", valueCol: "B" },
+      { label: "Last Update:", placeholder: "03/15/2026", row: 2, labelCol: "D", valueCol: "E" },
+      { label: "Deadline:", placeholder: "03/31/2026", row: 2, labelCol: "G", valueCol: "H" },
+    ],
+    headerRow: 4,
+    columns: [
+      { header: "Sales Representative", col: "A", width: 22, alignment: "Left", isBold: true },
+      { header: "Leads Generated", col: "B", width: 16, alignment: "Center" },
+      { header: "Deals Closed", col: "C", width: 14, alignment: "Center" },
+      { header: "Revenue Generated", col: "D", width: 18, alignment: "Right", isAccent: true },
+      { header: "Sales Representative", col: "E", width: 22, alignment: "Left", isBold: true },
+      { header: "Leads Generated", col: "F", width: 16, alignment: "Center" },
+      { header: "Deals Closed", col: "G", width: 14, alignment: "Center" },
+      { header: "Revenue Generated", col: "H", width: 18, alignment: "Right", isAccent: true },
+    ],
+    sampleData: [
+      ["Alice Martin", 45, 12, 84000, "Grace Lee", 38, 10, 72000],
+      ["Bob Chen", 52, 15, 105000, "Hank Davis", 41, 11, 78500],
+      ["Carol White", 39, 9, 63000, "Ivy Torres", 48, 14, 98000],
+      ["Dave Kim", 61, 18, 126000, "Jack Brown", 35, 8, 56000],
+    ],
+    totalRow: {
+      row: 13,
+      label: "TEAM TOTAL",
+      labelCol: "A",
+      values: {
+        B: 197, C: 54, D: 378000,
+        E: "TEAM TOTAL", F: 162, G: 43, H: 304500,
+      },
+    },
+    zones: [
+      { type: "title", rows: 1 },
+      { type: "meta", rows: 2 },
+      { type: "section_header", rows: 3 },
+      { type: "column_header", rows: 4 },
+      { type: "data", rows: [5, 12] },
+      { type: "total", rows: 13 },
+    ],
+    columnSpan: "A:H",
+    totalRows: 13,
+  },
+  sourceKind: "bundled",
+};
