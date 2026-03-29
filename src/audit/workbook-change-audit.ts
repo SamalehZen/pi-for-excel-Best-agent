@@ -23,6 +23,7 @@ export type WorkbookAuditToolName =
   | "modify_structure"
   | "comments"
   | "view_settings"
+  | "apply_template"
   | "workbook_history"
   | "execute_office_js";
 
@@ -120,6 +121,7 @@ function isWorkbookAuditToolName(value: unknown): value is WorkbookAuditToolName
     value === "modify_structure" ||
     value === "comments" ||
     value === "view_settings" ||
+    value === "apply_template" ||
     value === "workbook_history" ||
     value === "execute_office_js"
   );

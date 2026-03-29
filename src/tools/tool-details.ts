@@ -63,6 +63,37 @@ export interface FormatCellsDetails {
   recovery?: RecoveryCheckpointDetails;
 }
 
+export interface ApplyTemplateListDetails {
+  kind: "apply_template_list";
+  count: number;
+  templateIds: string[];
+}
+
+export interface ApplyTemplatePreviewDetails {
+  kind: "apply_template_preview";
+  templateId: string;
+  templateName: string;
+  category: string;
+}
+
+export interface ApplyTemplateApplyDetails {
+  kind: "apply_template_apply";
+  templateId: string;
+  templateName: string;
+  mode: "full" | "design_only";
+  address?: string;
+  detectedTitleRow?: number;
+  detectedHeaderRow?: number;
+  detectedDataRows?: [number, number];
+  detectedTotalRow?: number;
+  recovery?: RecoveryCheckpointDetails;
+}
+
+export type ApplyTemplateDetails =
+  | ApplyTemplateListDetails
+  | ApplyTemplatePreviewDetails
+  | ApplyTemplateApplyDetails;
+
 export interface ConditionalFormatDetails {
   kind: "conditional_format";
   action?: "add" | "clear";
@@ -971,6 +1002,28 @@ export function isSkillsErrorDetails(value: unknown): value is SkillsErrorDetail
     isOptionalString(value.requestedName) &&
     isOptionalStringArray(value.availableNames) &&
     typeof value.externalDiscoveryEnabled === "boolean"
+  );
+}
+
+export function isApplyTemplateListDetails(value: unknown): value is ApplyTemplateListDetails {
+  if (!isRecord(value)) return false;
+  if (value.kind !== "apply_template_list") return false;
+  return typeof value.count === "number" && Array.isArray(value.templateIds);
+}
+
+export function isApplyTemplatePreviewDetails(value: unknown): value is ApplyTemplatePreviewDetails {
+  if (!isRecord(value)) return false;
+  if (value.kind !== "apply_template_preview") return false;
+  return typeof value.templateId === "string" && typeof value.templateName === "string";
+}
+
+export function isApplyTemplateApplyDetails(value: unknown): value is ApplyTemplateApplyDetails {
+  if (!isRecord(value)) return false;
+  if (value.kind !== "apply_template_apply") return false;
+  return (
+    typeof value.templateId === "string" &&
+    typeof value.templateName === "string" &&
+    (value.mode === "full" || value.mode === "design_only")
   );
 }
 

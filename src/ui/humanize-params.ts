@@ -724,6 +724,24 @@ function humanizeConventions(p: Record<string, unknown>): ParamItem[] {
   return items;
 }
 
+function humanizeApplyTemplate(p: Record<string, unknown>): ParamItem[] {
+  const items: ParamItem[] = [];
+  const action = str(p.action);
+  const templateId = str(p.template_id);
+  const mode = str(p.mode);
+  const sheet = str(p.sheet);
+
+  if (action) items.push({ label: "Action", value: action });
+  if (templateId) items.push({ label: "Template", value: templateId });
+  if (mode) items.push({ label: "Mode", value: mode });
+  if (sheet) items.push({ label: "Sheet", value: sheet });
+  if (p.header_row) items.push({ label: "Header row", value: str(p.header_row) });
+  if (p.data_start_row) items.push({ label: "Data start", value: str(p.data_start_row) });
+  if (p.total_row) items.push({ label: "Total row", value: str(p.total_row) });
+  if (p.title_row) items.push({ label: "Title row", value: str(p.title_row) });
+  return items;
+}
+
 function humanizeWorkbookHistory(p: Record<string, unknown>): ParamItem[] {
   const items: ParamItem[] = [];
   const action = str(p.action || "list");
@@ -975,6 +993,7 @@ const CORE_HUMANIZERS = {
   comments: humanizeComments,
   instructions: humanizeInstructions,
   conventions: humanizeConventions,
+  apply_template: humanizeApplyTemplate,
   workbook_history: humanizeWorkbookHistory,
   skills: humanizeSkills,
 } satisfies Record<CoreToolName, HumanizerFn>;

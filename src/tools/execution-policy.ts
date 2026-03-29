@@ -67,6 +67,11 @@ function classifyWorkbookHistory(params: unknown): ToolExecutionMode {
   return action === "restore" ? "mutate" : "read";
 }
 
+function classifyApplyTemplate(params: unknown): ToolExecutionMode {
+  const action = getActionParam(params);
+  return action === "apply" ? "mutate" : "read";
+}
+
 function isViewSettingsStructureAction(params: unknown): boolean {
   const action = getActionParam(params);
   return action === "hide_sheet" || action === "show_sheet" || action === "very_hide_sheet";
@@ -91,6 +96,10 @@ export function getToolExecutionMode(toolName: string, params: unknown): ToolExe
 
   if (toolName === "workbook_history") {
     return classifyWorkbookHistory(params);
+  }
+
+  if (toolName === "apply_template") {
+    return classifyApplyTemplate(params);
   }
 
   return "mutate";
