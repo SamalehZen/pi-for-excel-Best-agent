@@ -1,4 +1,4 @@
-# Tool Behavior Decisions (Pi for Excel)
+# Tool Behavior Decisions (HyperFix)
 
 Concise record of recent tool behavior choices to avoid regressions. Update this as we tweak tooling.
 

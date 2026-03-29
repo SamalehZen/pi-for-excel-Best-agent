@@ -1,6 +1,6 @@
 # Compaction (`/compact`)
 
-Pi for Excel runs each chat inside the selected model’s **context window** (e.g. Claude Opus 4.6: 200k tokens). When the conversation grows too large, requests will fail with errors like **“prompt is too long”**.
+HyperFix runs each chat inside the selected model’s **context window** (e.g. Claude Opus 4.6: 200k tokens). When the conversation grows too large, requests will fail with errors like **“prompt is too long”**.
 
 `/compact` is the manual escape hatch: it **replaces older history with a structured summary**, while keeping the most recent work verbatim.
 

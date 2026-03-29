@@ -1,7 +1,7 @@
 ---
 name: web-search
 description: Search the public web for up-to-date facts. Works out of the box with Jina (default, no API key needed); optionally Serper, Tavily, or Brave Search. Use when workbook context is insufficient and fresh external references are needed.
-compatibility: Requires Pi for Excel integration "web_search" to be enabled. Works immediately with Jina (default); Serper/Tavily/Brave require an API key.
+compatibility: Requires HyperFix integration "web_search" to be enabled. Works immediately with Jina (default); Serper/Tavily/Brave require an API key.
 metadata:
   integration-id: web_search
   tool-name: web_search

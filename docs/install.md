@@ -1,4 +1,4 @@
-# Install Pi for Excel
+# Install HyperFix
 
 No coding or dev tools required — just download one file and add it to Excel.
 
@@ -8,13 +8,13 @@ No coding or dev tools required — just download one file and add it to Excel.
 
 Download this file and save it somewhere you can find it (e.g. your Desktop):
 
-👉 **[manifest.prod.xml](https://pi-for-excel.vercel.app/manifest.prod.xml)**
+👉 **[manifest.prod.xml](https://hyperexcel.vercel.app/manifest.prod.xml)**
 
 <details>
 <summary>Alternate download links (if the above is unavailable)</summary>
 
-- Latest release: https://github.com/tmustier/pi-for-excel/releases/latest
-- Direct repo copy: https://github.com/tmustier/pi-for-excel/blob/main/manifest.prod.xml
+- Latest release: https://github.com/SamalehZen/pi-for-excel-Best-agent/releases/latest
+- Direct repo copy: https://github.com/SamalehZen/pi-for-excel-Best-agent/blob/main/manifest.prod.xml
 
 </details>
 
@@ -31,11 +31,11 @@ Download this file and save it somewhere you can find it (e.g. your Desktop):
    ```
 3. Copy `manifest.prod.xml` into that folder
 4. Quit Excel completely (Cmd + Q) and reopen it
-5. Go to **Insert → My Add-ins** — you should see **Pi for Excel** listed. Click it to register the add-in.
-6. Now look for the **Add-ins** button on the far right of the **Home** ribbon tab (it looks like four orange squares). Click it, then click **Pi for Excel** to open the sidebar.
+5. Go to **Insert → My Add-ins** — you should see **HyperFix** listed. Click it to register the add-in.
+6. Now look for the **Add-ins** button on the far right of the **Home** ribbon tab (it looks like four orange squares). Click it, then click **HyperFix** to open the sidebar.
 
    <img src="../public/assets/add-ins-button.png" width="200" alt="Add-ins button in the Home ribbon tab" />
-   <img src="../public/assets/add-ins-dropdown.png" width="200" alt="Pi for Excel in the Add-ins dropdown" />
+   <img src="../public/assets/add-ins-dropdown.png" width="200" alt="HyperFix in the Add-ins dropdown" />
 
 > **Folder doesn't exist?** Create it first — open Terminal and run:
 > ```bash
@@ -79,7 +79,7 @@ For more detail, see [Microsoft's guide for Windows](https://learn.microsoft.com
 
 ## 3) First-run check
 
-1. Open the taskpane (click the **Add-ins** button in the Home ribbon tab, then click **Pi for Excel**)
+1. Open the taskpane (click the **Add-ins** button in the Home ribbon tab, then click **HyperFix**)
 2. Connect a provider (see below)
 3. Send a test prompt, e.g.:
    - `What sheet am I currently on?`
@@ -120,7 +120,7 @@ Notes:
 1. In `/login`, click **Login with …**
 2. Complete login in the browser window that opens
 3. Return to Excel and complete any prompt shown
-   - For OpenAI + Google OAuth flows, your browser will land on a page that says **"can't be reached"** — that's normal! Copy the full URL from the browser address bar and paste it when prompted in Pi for Excel
+   - For OpenAI + Google OAuth flows, your browser will land on a page that says **"can't be reached"** — that's normal! Copy the full URL from the browser address bar and paste it when prompted in HyperFix
    - Some Google workspace tiers may also ask for a Google Cloud project ID during setup
 
 If login fails with a CORS/network error, follow the next section.
@@ -186,7 +186,7 @@ PORT=3005 npx pi-for-excel-proxy
 
 ## Updates
 
-If you installed with `manifest.prod.xml`, Pi for Excel loads from a hosted URL and most updates are automatic.
+If you installed with `manifest.prod.xml`, HyperFix loads from a hosted URL and most updates are automatic.
 
 - Normal case: close/reopen Excel taskpane to pick up latest version.
 - Rare case (manifest changes): download the new `manifest.prod.xml` and upload it again in Excel.
@@ -205,7 +205,7 @@ If you installed with `manifest.prod.xml`, Pi for Excel loads from a hosted URL 
 - If you already tried the XML Expansion Packs path, close Excel and repeat the upload flow above
 
 ### Taskpane opens but is blank
-- Your network may block `https://pi-for-excel.vercel.app`
+- Your network may block `https://hyperexcel.vercel.app`
 - Try a different network / VPN setting
 
 ### I installed, but changes are not visible

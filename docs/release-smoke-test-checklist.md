@@ -6,7 +6,7 @@ Use this checklist before removing the **Experimental** badge or publishing a re
 
 ## Scope
 
-This checklist maps directly to issue [#179](https://github.com/tmustier/pi-for-excel/issues/179):
+This checklist maps directly to issue [#179](https://github.com/SamalehZen/pi-for-excel-Best-agent/issues/179):
 
 - Landing-page claim validation
 - Prompt example validation

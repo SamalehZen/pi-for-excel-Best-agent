@@ -2,7 +2,7 @@
 
 **Last reviewed:** 2026-02-22
 
-This document records every place Pi for Excel intentionally diverges from
+This document records every place HyperFix intentionally diverges from
 [pi-mono](https://github.com/badlogic/pi-mono) / `@mariozechner/pi-coding-agent`
 behavior, with rationale and status for each.
 
@@ -16,7 +16,7 @@ don't accumulate silently.
 
 ## 1. Mid-session model switching (fork vs in-place)
 
-| | pi-mono | Pi for Excel (current) |
+| | pi-mono | HyperFix (current) |
 |---|---|---|
 | Empty session | Switch in place | Switch in place |
 | Non-empty session (default) | Switch in place | Switch in place |
@@ -41,7 +41,7 @@ pi-mono parity (in-place), and kept fork as an advanced opt-in setting.
 
 ## 2. Tool refresh fingerprinting (no-op suppression)
 
-| | pi-mono | Pi for Excel |
+| | pi-mono | HyperFix |
 |---|---|---|
 | When tools change | Direct `setTools()` on explicit user action | Event-driven capability refreshes; apply `setTools()` only when tool fingerprint or extension tool revision changes |
 
@@ -71,7 +71,7 @@ tracking. Divergence remains architecture-driven.
 
 ## 3. Extension `llm.complete` side-session namespacing
 
-| | pi-mono | Pi for Excel |
+| | pi-mono | HyperFix |
 |---|---|---|
 | Extension LLM calls | No equivalent host-side `llm.complete` API | Scoped to a separate session ID per extension |
 
@@ -97,7 +97,7 @@ host-side `llm.complete` surface), not a disagreement with upstream.
 
 ## 4. Earlier compaction trigger for large context windows
 
-| | pi-mono | Pi for Excel |
+| | pi-mono | HyperFix |
 |---|---|---|
 | Hard trigger | `contextWindow - reserveTokens` | `min(contextWindow - reserveTokens, qualityCap)` |
 | Quality cap | None | 88% for ≥128k windows, 85% for ≥200k windows |
@@ -126,7 +126,7 @@ matches upstream.
 
 ### Compaction call shape
 
-Both pi-mono and Pi for Excel use the same pattern: serialize conversation to
+Both pi-mono and HyperFix use the same pattern: serialize conversation to
 text, send an isolated summarization request, inject the structured summary as a
 user message. We considered a "cache-safe fork compaction" approach (reusing the
 main runtime prefix) but **deferred** it — see

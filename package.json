@@ -1,5 +1,5 @@
 {
-  "name": "pi-for-excel",
+  "name": "hyperfix",
   "version": "0.9.1-pre",
   "description": "Open-source, multi-model AI sidebar add-in for Excel. Powered by Pi.",
   "type": "module",
@@ -53,7 +53,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/tmustier/pi-for-excel.git"
+    "url": "https://github.com/SamalehZen/pi-for-excel-Best-agent.git"
   },
   "engines": {
     "node": "^20.19.0 || ^22.13.0 || >=24"

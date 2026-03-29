@@ -1,6 +1,6 @@
 # Security threat model (v1)
 
-This document summarizes what Pi for Excel stores, where data flows, and key trust boundaries.
+This document summarizes what HyperFix stores, where data flows, and key trust boundaries.
 
 ## Scope
 

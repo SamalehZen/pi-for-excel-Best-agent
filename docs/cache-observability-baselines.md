@@ -1,6 +1,6 @@
 # Cache observability baselines
 
-Baseline expectations for prefix-churn telemetry in Pi for Excel.
+Baseline expectations for prefix-churn telemetry in HyperFix.
 
 This is the operational companion to `docs/context-management-policy.md` (area #424, item 6).
 

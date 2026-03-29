@@ -1,6 +1,6 @@
 # Integrations + External Tools
 
-Issue: [#24](https://github.com/tmustier/pi-for-excel/issues/24)
+Issue: [#24](https://github.com/SamalehZen/pi-for-excel-Best-agent/issues/24)
 
 > Terminology: these are **integrations** (Excel runtime toggles), not Agent Skills.
 > See [Agent Skills interop](./agent-skills-interop.md) for the standards mapping.

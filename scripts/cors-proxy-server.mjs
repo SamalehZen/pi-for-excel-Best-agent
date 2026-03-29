@@ -65,7 +65,7 @@ const HOP_BY_HOP_HEADERS = new Set([
 // Default allowlist matches our dev + hosted origins; override via env var.
 const DEFAULT_ALLOWED_ORIGINS = new Set([
   "https://localhost:3000",
-  "https://pi-for-excel.vercel.app",
+  "https://hyperexcel.vercel.app",
 ]);
 
 const allowedOrigins = (() => {

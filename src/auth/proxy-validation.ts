@@ -17,7 +17,7 @@ export const DEFAULT_LOCAL_PROXY_URL = "https://localhost:3003";
 export const PROXY_REACHABILITY_TARGET_URL = "https://github.com";
 
 export const PROXY_HELPER_DOCS_URL =
-  "https://github.com/tmustier/pi-for-excel/blob/main/docs/install.md#oauth-logins-and-cors-proxy";
+  "https://github.com/SamalehZen/pi-for-excel-Best-agent/blob/main/docs/install.md#oauth-logins-and-cors-proxy";
 
 export function normalizeProxyUrl(url: string): string {
   return url.trim().replace(/\/+$/, "");

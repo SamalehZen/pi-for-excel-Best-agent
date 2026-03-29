@@ -4,8 +4,8 @@
  * Generate a production manifest from the dev manifest.
  *
  * Usage:
- *   ADDIN_BASE_URL="https://pi-for-excel.vercel.app" node scripts/generate-manifest.mjs
- *   ADDIN_BASE_URL="https://pi-for-excel.example.com" OUT=manifest.prod.xml node scripts/generate-manifest.mjs
+ *   ADDIN_BASE_URL="https://hyperexcel.vercel.app" node scripts/generate-manifest.mjs
+ *   ADDIN_BASE_URL="https://hyperexcel.vercel.app" OUT=manifest.prod.xml node scripts/generate-manifest.mjs
  *
  * Replaces all occurrences of the dev base URL (https://localhost:3000) with ADDIN_BASE_URL.
  *
@@ -26,7 +26,7 @@ function fail(msg) {
 
 const baseUrlRaw = process.env.ADDIN_BASE_URL;
 if (!baseUrlRaw) {
-  fail("Missing ADDIN_BASE_URL. Example: ADDIN_BASE_URL=\"https://pi-for-excel.vercel.app\"");
+  fail("Missing ADDIN_BASE_URL. Example: ADDIN_BASE_URL=\"https://hyperexcel.vercel.app\"");
 }
 
 const baseUrl = baseUrlRaw.trim().replace(/\/+$/, "");
