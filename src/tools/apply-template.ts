@@ -619,22 +619,19 @@ async function applyDesignOnly(
     }
 
     const lastColIdx = usedRange.columnIndex + usedRange.columnCount;
+    const firstColIdx = usedRange.columnIndex + 1;
 
     for (const col of template.structure.columns) {
+      const colIdx = colLetterToIndex(col.col);
+      if (colIdx < firstColIdx || colIdx > lastColIdx) continue;
       if (col.width) {
-        const colIdx = colLetterToIndex(col.col);
-        if (colIdx <= lastColIdx) {
-          const colRange = sheet.getRange(`${col.col}:${col.col}`);
-          colRange.format.columnWidth = col.width * 7.2;
-        }
+        const colRange = sheet.getRange(`${col.col}:${col.col}`);
+        colRange.format.columnWidth = col.width * 7.2;
       }
       if (col.isAccent && dataStartRow && dataEndRow) {
-        const colIdx = colLetterToIndex(col.col);
-        if (colIdx <= lastColIdx) {
-          const accentRange = sheet.getRange(`${col.col}${dataStartRow}:${col.col}${dataEndRow}`);
-          accentRange.format.fill.color = palette.accentBg;
-          accentRange.format.font.color = palette.accentFg;
-        }
+        const accentRange = sheet.getRange(`${col.col}${dataStartRow}:${col.col}${dataEndRow}`);
+        accentRange.format.fill.color = palette.accentBg;
+        accentRange.format.font.color = palette.accentFg;
       }
     }
 

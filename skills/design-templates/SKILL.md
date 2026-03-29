@@ -42,7 +42,8 @@ Use this flow when the user wants a new sheet built from scratch.
 
 5. **Customize after applying.** The user may want to:
    - Change meta field values (e.g. update the employee name or reporting period) using `write_cells`
-   - Add or remove data rows using `write_cells`
+   - Add data to empty rows using `write_cells`
+   - Insert or remove rows using `modify_structure`
    - Adjust specific colors or fonts using `format_cells`
    - Modify column widths or row heights
 
