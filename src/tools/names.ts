@@ -14,6 +14,7 @@ export const CORE_TOOL_NAMES = [
   "comments",
   "instructions",
   "conventions",
+  "apply_template",
   "workbook_history",
   "skills",
 ] as const;

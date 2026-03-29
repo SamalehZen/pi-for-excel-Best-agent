@@ -24,6 +24,7 @@ import { createViewSettingsTool } from "./view-settings.js";
 import { createCommentsTool } from "./comments.js";
 import { createInstructionsTool } from "./instructions.js";
 import { createConventionsTool } from "./conventions.js";
+import { createApplyTemplateTool } from "./apply-template.js";
 import { createWorkbookHistoryTool } from "./workbook-history.js";
 import {
   createSkillsTool,
@@ -58,6 +59,7 @@ export function createCoreTools(options: CreateCoreToolsOptions = {}): AnyCoreTo
     createCommentsTool(),
     createInstructionsTool(),
     createConventionsTool(),
+    createApplyTemplateTool(),
     createWorkbookHistoryTool(),
     createSkillsTool(options.skills),
   ] as unknown as AnyCoreTool[];

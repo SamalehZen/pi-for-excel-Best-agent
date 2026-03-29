@@ -30,6 +30,7 @@ import {
   isExplainFormulaDetails,
   isFillFormulaDetails,
   isFormatCellsDetails,
+  isApplyTemplateApplyDetails,
   isModifyStructureDetails,
   isPythonTransformRangeDetails,
   isReadRangeCsvDetails,
@@ -422,6 +423,16 @@ function buildChangeExplanationInputForTool(
     };
   }
 
+  if (toolName === "apply_template") {
+    return {
+      toolName,
+      blocked: blockedFromText,
+      summary,
+      error,
+      outputAddress: isApplyTemplateApplyDetails(details) ? details.address : range,
+    };
+  }
+
   if (toolName === "conditional_format") {
     return {
       toolName,
@@ -653,6 +664,10 @@ function recoveryBadgeForDetails(details: unknown): string {
   }
 
   if (isViewSettingsDetails(details)) {
+    return withRecoveryBadge("", details.recovery);
+  }
+
+  if (isApplyTemplateApplyDetails(details)) {
     return withRecoveryBadge("", details.recovery);
   }
 
@@ -924,6 +939,19 @@ function describeToolCall(
       if (action === "get") return { action: "View", detail: "conventions" };
       if (action === "reset") return { action: "Reset", detail: "conventions" };
       return { action: "Update", detail: "conventions" };
+    }
+    case "apply_template": {
+      const action = p.action as string | undefined;
+      const templateId = p.template_id as string | undefined;
+      const recovery = recoveryBadgeForDetails(details);
+      if (action === "list") return { action: "List", detail: "templates" };
+      if (action === "preview") return { action: "Preview", detail: templateId ?? "template" };
+      const addr = isApplyTemplateApplyDetails(details) ? details.address : undefined;
+      return {
+        action: "Apply template",
+        detail: (templateId ?? "template") + (addr ? ` → ${addr}` : "") + recovery,
+        address: addr,
+      };
     }
     case "workbook_history": {
       const action = p.action as string | undefined;
