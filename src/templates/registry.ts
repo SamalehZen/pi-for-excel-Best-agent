@@ -24,7 +24,8 @@ export function listTemplates(userTemplates?: readonly TemplateDefinition[]): Te
   const all: TemplateDefinition[] = [...BUNDLED_TEMPLATE_DEFINITIONS];
   if (userTemplates) {
     for (const ut of userTemplates) {
-      const idx = all.findIndex((t) => t.id === ut.id);
+      const needle = ut.id.toLowerCase();
+      const idx = all.findIndex((t) => t.id.toLowerCase() === needle);
       if (idx >= 0) all[idx] = ut;
       else all.push(ut);
     }
