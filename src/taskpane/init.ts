@@ -158,7 +158,10 @@ import {
   closeStatusPopover,
   toggleContextPopover,
   toggleThinkingPopover,
+  toggleTemplatePopover,
+  type TemplatePopoverItem,
 } from "./status-popovers.js";
+import { BUNDLED_TEMPLATE_DEFINITIONS } from "../templates/definitions/index.js";
 import { showWelcomeLogin } from "./welcome-login.js";
 import {
   SessionRuntimeManager,
@@ -1912,6 +1915,35 @@ export async function initTaskpane(opts: {
     document.dispatchEvent(new CustomEvent("pi:command-run", { detail: { name, args } }));
   };
 
+  const openTemplatePicker = (anchor: Element): void => {
+    const templates: TemplatePopoverItem[] = BUNDLED_TEMPLATE_DEFINITIONS.map((def) => ({
+      id: def.id,
+      name: def.name,
+      category: def.category,
+      colors: [
+        def.design.palette.titleBg,
+        def.design.palette.headerBg,
+        def.design.palette.accentBg,
+        def.design.palette.totalBg,
+      ],
+    }));
+
+    toggleTemplatePopover({
+      anchor,
+      templates,
+      onSelectTemplate: (templateId: string) => {
+        const activeRuntime = getActiveRuntime();
+        if (!activeRuntime) {
+          showToast("No active session");
+          return;
+        }
+        activeRuntime.actionQueue.enqueuePrompt(
+          `Apply the "${templateId}" template to the active sheet in full mode.`
+        );
+      },
+    });
+  };
+
   const openThinkingPopoverFrom = (target: Element): void => {
     const trigger = target.closest(".pi-status-thinking");
     if (!trigger) return;
@@ -2000,6 +2032,12 @@ export async function initTaskpane(opts: {
     // Thinking level selector
     if (el.closest(".pi-status-thinking")) {
       openThinkingPopoverFrom(el);
+      return;
+    }
+
+    // Template picker
+    if (el.closest(".pi-status-template")) {
+      openTemplatePicker(el.closest(".pi-status-template")!);
       return;
     }
 
