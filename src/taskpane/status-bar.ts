@@ -131,6 +131,9 @@ function renderStatusBar(
     : "Confirm: Pi asks before each workbook change. Click to switch to Auto.";
   const modeBadge = `<button type="button" class="pi-status-mode pi-status-clickable pi-status-tooltip--right${modeBadgeClass}" data-tooltip="${modeTooltip}"><span>${modeLabel}</span><span class="pi-status-affordance" aria-hidden="true">${affordanceChevronSvg}</span></button>`;
 
+  const templateSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/></svg>`;
+  const templateBadge = `<button type="button" class="pi-status-template pi-status-clickable" data-tooltip="Choose a design template." aria-label="Template picker">${templateSvg}<span class="pi-status-affordance" aria-hidden="true">${affordanceChevronSvg}</span></button>`;
+
   const thinkingTooltip = escapeAttr(
     "How deeply Pi reasons before answering — higher is slower but more thorough. Click to choose, or ⇧Tab to cycle.",
   );
@@ -152,6 +155,7 @@ function renderStatusBar(
     </div>
     <div class="pi-status-side">
       ${modeBadge}
+      ${templateBadge}
     </div>
   `;
 

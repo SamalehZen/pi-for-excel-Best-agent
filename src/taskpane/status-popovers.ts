@@ -8,7 +8,7 @@ import type { StatusContextWarningSeverity } from "./status-context.js";
 
 export type StatusCommandName = "compact" | "new";
 
-type StatusPopoverKind = "thinking" | "context";
+type StatusPopoverKind = "thinking" | "context" | "template";
 
 interface ActivePopoverState {
   kind: StatusPopoverKind;
@@ -258,6 +258,20 @@ function createCommandButton(args: {
   return button;
 }
 
+export interface TemplatePopoverItem {
+  id: string;
+  name: string;
+  category: string;
+  /** 4 palette colors: [titleBg, headerBg, accentBg, totalBg] */
+  colors: [string, string, string, string];
+}
+
+interface TemplatePopoverOptions {
+  anchor: Element;
+  templates: readonly TemplatePopoverItem[];
+  onSelectTemplate: (templateId: string) => void;
+}
+
 export function toggleContextPopover(opts: ContextPopoverOptions): void {
   if (shouldToggle("context", opts.anchor)) {
     closeStatusPopover();
@@ -308,5 +322,71 @@ export function toggleContextPopover(opts: ContextPopoverOptions): void {
 
   popover.appendChild(actions);
   mountPopover("context", opts.anchor, popover);
+}
+
+export function toggleTemplatePopover(opts: TemplatePopoverOptions): void {
+  if (shouldToggle("template", opts.anchor)) {
+    closeStatusPopover();
+    return;
+  }
+
+  const popover = createPopoverBase("template");
+
+  const title = document.createElement("h3");
+  title.className = "pi-status-popover__title";
+  title.textContent = "Template";
+
+  const description = createDescriptionBlock("Choose a design template to apply to the active sheet.");
+
+  const list = document.createElement("div");
+  list.className = "pi-status-popover__list";
+
+  for (const template of opts.templates) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "pi-status-popover__item";
+
+    const body = document.createElement("span");
+    body.className = "pi-status-popover__item-body";
+    body.style.flexDirection = "row";
+    body.style.alignItems = "center";
+    body.style.gap = "8px";
+
+    const dotsContainer = document.createElement("span");
+    dotsContainer.className = "pi-template-dots";
+    for (const color of template.colors) {
+      const dot = document.createElement("span");
+      dot.className = "pi-template-dot";
+      dot.style.background = color;
+      dotsContainer.appendChild(dot);
+    }
+
+    const textWrap = document.createElement("span");
+    textWrap.style.display = "flex";
+    textWrap.style.flexDirection = "column";
+    textWrap.style.gap = "1px";
+
+    const label = document.createElement("span");
+    label.className = "pi-status-popover__item-label";
+    label.textContent = template.name;
+
+    const hint = document.createElement("span");
+    hint.className = "pi-status-popover__item-hint";
+    hint.textContent = template.category;
+
+    textWrap.append(label, hint);
+    body.append(dotsContainer, textWrap);
+    button.appendChild(body);
+
+    button.addEventListener("click", () => {
+      opts.onSelectTemplate(template.id);
+      closeStatusPopover();
+    });
+
+    list.appendChild(button);
+  }
+
+  popover.append(title, description, list);
+  mountPopover("template", opts.anchor, popover);
 }
 
