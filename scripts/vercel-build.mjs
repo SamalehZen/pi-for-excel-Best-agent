@@ -57,14 +57,11 @@ writeFileSync(
 //
 // Route processing order (Build Output API v3):
 //   1. Header rules (continue: true — apply headers, keep matching)
-//   2. { handle: "filesystem" } — check static files AND functions
-//   3. { handle: "miss" }       — enter "miss" phase for unmatched paths
-//   4. Explicit rewrite: /api/gemini/* → gemini-proxy function
+//   2. Gemini proxy rewrite: /api/gemini/* → /api/gemini-proxy?proxyPath=...
+//      (placed BEFORE filesystem so the rewritten URL is resolved by step 3)
+//   3. { handle: "filesystem" } — resolve static files AND functions
+//   4. { handle: "miss" }       — enter "miss" phase for unmatched paths
 //   5. Other rewrites (proxy, oauth callbacks)
-//
-// IMPORTANT: rewrites MUST come after BOTH "handle: filesystem" AND
-// "handle: miss".  Without "handle: miss", rewrites after the filesystem
-// phase are never evaluated and all non-filesystem paths return 404.
 const vercelJson = JSON.parse(readFileSync("vercel.json", "utf-8"));
 const routes = [];
 
@@ -77,19 +74,18 @@ for (const h of vercelJson.headers ?? []) {
   routes.push({ src: h.source, headers, continue: true });
 }
 
-// Phase 2: Filesystem lookup (static files + functions)
-routes.push({ handle: "filesystem" });
-
-// Phase 3: Miss — routes below only run when filesystem has no match.
-routes.push({ handle: "miss" });
-
-// Gemini proxy — route /api/gemini/* to the edge function.
-// The function is at /api/gemini-proxy (no brackets in the name).
-// The original sub-path is passed via ?proxyPath= query parameter.
+// Phase 2: Gemini proxy rewrite — BEFORE filesystem so the rewritten URL
+// (/api/gemini-proxy) is resolved by the filesystem phase.
 routes.push({ src: "/api/gemini/(.+)", dest: "/api/gemini-proxy?proxyPath=$1" });
 routes.push({ src: "/api/gemini/?$", dest: "/api/gemini-proxy" });
 
-// Other rewrites
+// Phase 3: Filesystem lookup (static files + functions)
+routes.push({ handle: "filesystem" });
+
+// Phase 4: Miss — routes below only run when filesystem has no match.
+routes.push({ handle: "miss" });
+
+// Phase 5: Other rewrites
 for (const r of vercelJson.rewrites ?? []) {
   routes.push({ src: r.source, dest: r.destination });
 }

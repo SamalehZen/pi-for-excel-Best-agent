@@ -119,9 +119,9 @@ export default async function handler(request: Request): Promise<Response> {
   // Build target URL
   const targetUrl = new URL(`${GEMINI_BASE}/${pathAfterPrefix}`);
 
-  // Copy query params but REPLACE the API key
+  // Copy query params but REPLACE the API key and strip internal routing params
   for (const [key, value] of url.searchParams) {
-    if (key !== 'key') {
+    if (key !== 'key' && key !== 'proxyPath') {
       targetUrl.searchParams.set(key, value);
     }
   }
