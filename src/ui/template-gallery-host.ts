@@ -88,6 +88,33 @@ export function showTemplateGallery(options: GalleryHostOptions): void {
   iframe.setAttribute("title", "Template Gallery");
 
   overlay.appendChild(iframe);
+
+  // Close button — always visible above the iframe
+  const closeBtn = document.createElement("button");
+  closeBtn.type = "button";
+  closeBtn.setAttribute("aria-label", "Close gallery");
+  closeBtn.textContent = "\u2715";
+  closeBtn.style.cssText = `
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 260;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.3);
+    background: rgba(0,0,0,0.5);
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  `;
+  closeBtn.addEventListener("click", () => closeGallery(true));
+  overlay.appendChild(closeBtn);
+
   activeOverlay = overlay;
   activeIframe = iframe;
 
