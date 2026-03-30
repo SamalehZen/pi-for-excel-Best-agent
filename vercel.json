@@ -9,8 +9,8 @@
       "destination": "/api/gemini-proxy"
     },
     {
-      "source": "/api/gemini/:path*",
-      "destination": "/api/gemini-proxy?proxyPath=:path*"
+      "source": "/api/gemini/:proxyPath*",
+      "destination": "/api/gemini-proxy?proxyPath=:proxyPath*"
     },
     {
       "source": "/proxy",
