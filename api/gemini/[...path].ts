@@ -7,7 +7,9 @@
  * This enables SaaS mode: users don't need their own API keys.
  */
 
-export const runtime = 'edge';
+export const config = {
+  runtime: 'edge',
+};
 
 const GEMINI_BASE = 'https://generativelanguage.googleapis.com';
 
