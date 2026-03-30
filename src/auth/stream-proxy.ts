@@ -17,6 +17,7 @@ import {
   type StreamOptions,
 } from "@mariozechner/pi-ai";
 
+import { isSaasMode, SAAS_GEMINI_PROXY_PATH, SAAS_PROVIDER } from "./saas-mode.js";
 import { isDebugEnabled } from "../debug/debug.js";
 import { selectToolBundle, type ToolBundleId } from "../context/tool-disclosure.js";
 import { modelRecencyScore } from "../models/model-ordering.js";
@@ -466,10 +467,23 @@ export function createOfficeStreamFn(getProxyUrl: GetProxyUrl) {
       ? context
       : { ...context, tools: toolSelection.tools };
 
-    const normalizedModel = normalizeGoogleOAuthModel(model);
+    // Use `let` so SaaS mode can override the baseUrl.
+    let effectiveModel = normalizeGoogleOAuthModel(model);
+
+    // SaaS mode: route Google provider through the server-side Gemini proxy.
+    // The proxy injects the real API key server-side, so the placeholder key
+    // from ProviderKeysStore is harmless (it gets replaced by the Edge Function).
+    // getProxyUrl() returns undefined in SaaS mode, so the `if (!proxyUrl)` path
+    // below calls streamSimple with this overridden baseUrl — no code duplication.
+    if (isSaasMode() && effectiveModel.provider === SAAS_PROVIDER) {
+      effectiveModel = {
+        ...effectiveModel,
+        baseUrl: `${window.location.origin}${SAAS_GEMINI_PROXY_PATH}`,
+      };
+    }
 
     const callRecord = recordCall(
-      normalizedModel,
+      effectiveModel,
       effectiveContext,
       options,
       continuation,
@@ -479,16 +493,16 @@ export function createOfficeStreamFn(getProxyUrl: GetProxyUrl) {
 
     const proxyUrl = await getProxyUrl();
     if (!proxyUrl) {
-      return streamSimple(normalizedModel, effectiveContext, effectiveOptions);
+      return streamSimple(effectiveModel, effectiveContext, effectiveOptions);
     }
 
-    if (!shouldProxyProvider(normalizedModel.provider, options?.apiKey)) {
-      return streamSimple(normalizedModel, effectiveContext, effectiveOptions);
+    if (!shouldProxyProvider(effectiveModel.provider, options?.apiKey)) {
+      return streamSimple(effectiveModel, effectiveContext, effectiveOptions);
     }
 
     // Guardrails: fail fast for known-bad proxy configs (e.g., HTTP proxy from HTTPS taskpane).
     const validated = validateOfficeProxyUrl(proxyUrl);
 
-    return streamSimple(applyProxy(normalizedModel, validated), effectiveContext, effectiveOptions);
+    return streamSimple(applyProxy(effectiveModel, validated), effectiveContext, effectiveOptions);
   };
 }
