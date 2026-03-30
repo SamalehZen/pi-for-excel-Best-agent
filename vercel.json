@@ -1,12 +1,8 @@
 {
+  "framework": null,
   "buildCommand": "npm run build",
   "ignoreCommand": "node scripts/vercel-ignore-command.mjs",
   "outputDirectory": "dist",
-  "functions": {
-    "api/**/*.ts": {
-      "runtime": "edge"
-    }
-  },
   "rewrites": [
     {
       "source": "/proxy",
