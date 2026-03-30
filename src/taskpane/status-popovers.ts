@@ -530,8 +530,7 @@ export function toggleTemplatePopover(opts: TemplatePopoverOptions): void {
   if (activePopover) {
     const existingCleanup = activePopover.cleanup;
     activePopover.cleanup = () => {
-      existingCleanup();
-      origCleanup();
+      try { existingCleanup(); } finally { origCleanup(); }
     };
   }
 }
