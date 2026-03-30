@@ -77,9 +77,15 @@ export default async function handler(request: Request): Promise<Response> {
     return jsonError({ error: 'Method not allowed' }, 405, origin);
   }
 
-  // Origin check (basic protection — no auth for MVP)
+  // Origin check — reject spoofed origins AND origin-less POST requests.
+  // Browsers always send Origin on cross-origin POSTs (and modern browsers
+  // on same-origin POSTs too), so a missing Origin on POST means a
+  // non-browser client trying to use the proxy as an open relay.
   if (origin && !isAllowedOrigin(origin)) {
     return jsonError({ error: 'Forbidden' }, 403, origin);
+  }
+  if (!origin && request.method !== 'GET') {
+    return jsonError({ error: 'Forbidden: Origin header required' }, 403, null);
   }
 
   // Validate API key is configured
