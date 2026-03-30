@@ -98,9 +98,15 @@ export default async function handler(request: Request): Promise<Response> {
     );
   }
 
-  // Extract path after /api/gemini/
+  // Extract the proxied sub-path.
+  // In Build Output API mode, the config.json rewrite passes the original
+  // path as ?proxyPath=... since the function is at /api/gemini-proxy
+  // (no catch-all brackets in the directory name).
+  // Fallback: parse from pathname for local dev / direct invocation.
   const url = new URL(request.url);
-  const pathAfterPrefix = url.pathname.replace(/^\/api\/gemini\/?/, '');
+  const pathAfterPrefix =
+    url.searchParams.get('proxyPath') ||
+    url.pathname.replace(/^\/api\/gemini(?:-proxy)?\/?/, '');
 
   if (!pathAfterPrefix) {
     return jsonError(
