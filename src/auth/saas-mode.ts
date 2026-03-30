@@ -21,8 +21,9 @@ export function isSaasMode(): boolean {
   return SAAS_HOSTS.has(window.location.hostname);
 }
 
-/** Base path for the Gemini API proxy on the server. */
-export const SAAS_GEMINI_PROXY_PATH = "/api/gemini";
+/** Base path for the Gemini API proxy on the server. Includes /v1beta because
+ * the Google SDK expects the base URL to already contain the API version. */
+export const SAAS_GEMINI_PROXY_PATH = "/api/gemini/v1beta";
 
 /** The provider name used in SaaS mode. */
 export const SAAS_PROVIDER = "google";
