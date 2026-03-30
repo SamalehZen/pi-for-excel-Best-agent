@@ -1916,8 +1916,6 @@ export async function initTaskpane(opts: {
   };
 
   const openTemplatePicker = (anchor: Element): void => {
-    closeStatusPopover();
-
     const templates: TemplatePopoverItem[] = BUNDLED_TEMPLATE_DEFINITIONS.map((def) => ({
       id: def.id,
       name: def.name,
