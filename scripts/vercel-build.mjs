@@ -85,9 +85,9 @@ routes.push({ handle: "filesystem" });
 // Phase 4: Miss — routes below only run when filesystem has no match.
 routes.push({ handle: "miss" });
 
-// Phase 5: Other rewrites
+// Phase 5: Other rewrites (check: true required after handle:miss)
 for (const r of vercelJson.rewrites ?? []) {
-  routes.push({ src: r.source, dest: r.destination });
+  routes.push({ src: r.source, dest: r.destination, check: true });
 }
 
 const config = { version: 3, routes };
