@@ -26,6 +26,7 @@ import type {
   ApplyTemplateApplyDetails,
   ApplyTemplateDetails,
 } from "./tool-details.js";
+import type { DataAnalysisHints } from "../template-gallery/template-catalog.js";
 import {
   listTemplates,
   getTemplateById,
@@ -221,6 +222,59 @@ async function executeGallery(): Promise<AgentToolResult<ApplyTemplateListDetail
   const userTemplates = await tryLoadUserTemplates();
   const templates = listTemplates(userTemplates.length > 0 ? userTemplates : undefined);
 
+  // Analyze active sheet data to build hints for recommendations
+  let hints: DataAnalysisHints | null = null;
+  try {
+    hints = await excelRun(async (context) => {
+      const sheet = context.workbook.worksheets.getActiveWorksheet();
+      const usedRange = sheet.getUsedRange();
+      usedRange.load("values,rowCount,columnCount,rowIndex");
+      await context.sync();
+
+      const values = usedRange.values as unknown[][];
+      if (!values || values.length === 0) return null;
+
+      const rowCount = usedRange.rowCount;
+      const colCount = usedRange.columnCount;
+      const headers: string[] = [];
+      const keywords: string[] = [];
+      let hasDateColumns = false;
+      let hasNumericColumns = false;
+
+      for (const cell of values[0]) {
+        if (typeof cell === "string" && cell.trim()) {
+          headers.push(cell.trim());
+          keywords.push(...cell.trim().toLowerCase().split(/\s+/));
+        }
+      }
+
+      for (let r = 1; r < Math.min(values.length, 10); r++) {
+        for (const cell of values[r]) {
+          if (typeof cell === "number") {
+            hasNumericColumns = true;
+            if (cell > 1 && cell < 60000 && Number.isInteger(cell)) {
+              hasDateColumns = true;
+            }
+          }
+          if (typeof cell === "string" && /\d{1,4}[-/]\d{1,2}[-/]\d{1,4}/.test(cell)) {
+            hasDateColumns = true;
+          }
+        }
+      }
+
+      return {
+        keywords: [...new Set(keywords)].slice(0, 20),
+        hasDateColumns,
+        hasNumericColumns,
+        columnCount: colCount,
+        rowCount,
+        headers,
+      };
+    });
+  } catch {
+    // Sheet might be empty or inaccessible — proceed without hints
+  }
+
   try {
     const { showTemplateGallery } = await import("../ui/template-gallery-host.js");
     const galleryResult = await new Promise<{ templateId: string; xlsxFile: string; templateName: string } | null>((resolve) => {
@@ -231,6 +285,7 @@ async function executeGallery(): Promise<AgentToolResult<ApplyTemplateListDetail
         onClosed: () => {
           resolve(null);
         },
+        hints,
       });
     });
 
