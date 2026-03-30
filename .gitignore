@@ -33,3 +33,4 @@ dist/
 
 # Session exports
 pi-session-*
+.vercel/output/
