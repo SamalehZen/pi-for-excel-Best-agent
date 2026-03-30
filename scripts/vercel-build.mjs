@@ -57,10 +57,19 @@ writeFileSync(
 
 // ── 6. Build Output API config (routing) ────────────────────────────────────
 // Convert vercel.json rewrites + headers to Build Output API routes.
+//
+// Route processing order matters in the Build Output API:
+//   1. Header rules (continue: true — apply headers, keep matching)
+//   2. { handle: "filesystem" } — check static files AND functions
+//   3. Rewrite rules — only reached if no filesystem match
+//   4. { handle: "miss" } — final fallback phase
+//
+// Without "handle: filesystem", Vercel never looks up the functions directory
+// and all function routes return 404.
 const vercelJson = JSON.parse(readFileSync("vercel.json", "utf-8"));
 const routes = [];
 
-// Headers → route with "headers" + "continue: true"
+// Phase 1: Headers → route with "headers" + "continue: true"
 for (const h of vercelJson.headers ?? []) {
   const headers = {};
   for (const { key, value } of h.headers) {
@@ -69,7 +78,10 @@ for (const h of vercelJson.headers ?? []) {
   routes.push({ src: h.source, headers, continue: true });
 }
 
-// Rewrites → route with "dest"
+// Phase 2: Filesystem lookup — serves static files AND edge/serverless functions.
+routes.push({ handle: "filesystem" });
+
+// Phase 3: Rewrites — only reached for paths not matched by filesystem.
 for (const r of vercelJson.rewrites ?? []) {
   routes.push({ src: r.source, dest: r.destination });
 }
