@@ -2,11 +2,6 @@
   "buildCommand": "npm run build",
   "ignoreCommand": "node scripts/vercel-ignore-command.mjs",
   "outputDirectory": "dist",
-  "functions": {
-    "api/**/*.ts": {
-      "runtime": "nodejs@20.x"
-    }
-  },
   "rewrites": [
     {
       "source": "/proxy",
