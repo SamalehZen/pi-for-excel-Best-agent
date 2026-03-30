@@ -42,6 +42,14 @@ function corsHeaders(origin: string | null): Record<string, string> {
   return headers;
 }
 
+function normalizeGeminiPath(path: string): string {
+  const trimmed = path.replace(/^\/+/, '');
+  if (/^v\d(?:alpha|beta)?\//i.test(trimmed)) {
+    return trimmed;
+  }
+  return `v1beta/${trimmed}`;
+}
+
 function jsonError(
   body: Record<string, string>,
   status: number,
@@ -104,7 +112,8 @@ export default async function handler(request: Request): Promise<Response> {
     );
   }
 
-  const targetUrl = new URL(`${GEMINI_BASE}/${pathAfterPrefix}`);
+  const normalizedPath = normalizeGeminiPath(pathAfterPrefix);
+  const targetUrl = new URL(`${GEMINI_BASE}/${normalizedPath}`);
   for (const [key, value] of url.searchParams) {
     if (key !== 'key' && key !== 'proxyPath' && key !== 'path') {
       targetUrl.searchParams.set(key, value);
