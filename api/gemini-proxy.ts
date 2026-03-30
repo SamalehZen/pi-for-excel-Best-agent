@@ -93,6 +93,7 @@ export default async function handler(request: Request): Promise<Response> {
   const url = new URL(request.url);
   const pathAfterPrefix =
     url.searchParams.get('proxyPath') ||
+    url.searchParams.get('path') ||
     url.pathname.replace(/^\/api\/gemini(?:-proxy)?\/?/, '');
 
   if (!pathAfterPrefix) {
@@ -105,7 +106,7 @@ export default async function handler(request: Request): Promise<Response> {
 
   const targetUrl = new URL(`${GEMINI_BASE}/${pathAfterPrefix}`);
   for (const [key, value] of url.searchParams) {
-    if (key !== 'key' && key !== 'proxyPath') {
+    if (key !== 'key' && key !== 'proxyPath' && key !== 'path') {
       targetUrl.searchParams.set(key, value);
     }
   }
