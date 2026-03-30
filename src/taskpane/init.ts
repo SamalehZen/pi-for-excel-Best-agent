@@ -12,6 +12,7 @@ import { ModelSelector } from "@mariozechner/pi-web-ui/dist/dialogs/ModelSelecto
 import { getAppStorage } from "@mariozechner/pi-web-ui/dist/storage/app-storage.js";
 import type { SessionData } from "@mariozechner/pi-web-ui/dist/storage/types.js";
 
+import { isSaasMode, SAAS_PROVIDER, SAAS_PLACEHOLDER_KEY } from "../auth/saas-mode.js";
 import { createOfficeStreamFn } from "../auth/stream-proxy.js";
 import {
   DEFAULT_LOCAL_PROXY_URL,
@@ -244,19 +245,22 @@ export async function initTaskpane(opts: {
   }
 
   // 1c. Security warning: remote proxies can see your prompts + credentials.
-  try {
-    const proxyEnabled = await settings.get<boolean>("proxy.enabled");
-    const proxyUrl = await settings.get<string>("proxy.url");
-    if (
-      proxyEnabled === true &&
-      typeof proxyUrl === "string" &&
-      proxyUrl.trim().length > 0 &&
-      !isLoopbackProxyUrl(proxyUrl)
-    ) {
-      showToast("Security warning: proxy URL is not localhost — it can see your tokens and prompts.");
+  // Skip in SaaS mode — no user-configured proxy.
+  if (!isSaasMode()) {
+    try {
+      const proxyEnabled = await settings.get<boolean>("proxy.enabled");
+      const proxyUrl = await settings.get<string>("proxy.url");
+      if (
+        proxyEnabled === true &&
+        typeof proxyUrl === "string" &&
+        proxyUrl.trim().length > 0 &&
+        !isLoopbackProxyUrl(proxyUrl)
+      ) {
+        showToast("Security warning: proxy URL is not localhost — it can see your tokens and prompts.");
+      }
+    } catch {
+      // ignore
     }
-  } catch {
-    // ignore
   }
 
   // 2. Resolve available providers (built-ins + configured custom providers)
@@ -330,7 +334,21 @@ export async function initTaskpane(opts: {
     console.warn("[auth] Provider lookup failed during startup:", error);
   }
 
-  if (availableProviders.length === 0) {
+  // SaaS mode: auto-configure Google Gemini with placeholder key.
+  // The real API key is injected server-side by the /api/gemini proxy.
+  if (isSaasMode()) {
+    try {
+      const existingKey = await providerKeys.get(SAAS_PROVIDER);
+      if (!existingKey) {
+        await providerKeys.set(SAAS_PROVIDER, SAAS_PLACEHOLDER_KEY);
+      }
+      await refreshConfiguredProviders();
+    } catch (error: unknown) {
+      console.warn("[auth] SaaS provider auto-config failed:", error);
+    }
+  }
+
+  if (availableProviders.length === 0 && !isSaasMode()) {
     void showWelcomeLogin(providerKeys).catch((error: unknown) => {
       console.warn("[auth] Failed to open welcome login:", error);
     });
@@ -343,6 +361,9 @@ export async function initTaskpane(opts: {
   // Workbook structure context is injected separately by transformContext.
 
   const streamFn = createOfficeStreamFn(async () => {
+    // SaaS mode: server-side proxy handles routing — no CORS proxy needed.
+    if (isSaasMode()) return undefined;
+
     // In dev mode, Vite's reverse proxy handles CORS — don't double-proxy.
     if (import.meta.env.DEV) return undefined;
 
@@ -955,6 +976,11 @@ export async function initTaskpane(opts: {
 
     // API key resolution
     agent.getApiKey = async (provider: string) => {
+      // SaaS mode: return placeholder for google — server proxy handles the real key.
+      if (isSaasMode() && provider === SAAS_PROVIDER) {
+        return SAAS_PLACEHOLDER_KEY;
+      }
+
       const key = await getAppStorage().providerKeys.get(provider);
       if (key) return key;
 
@@ -1900,7 +1926,9 @@ export async function initTaskpane(opts: {
   });
 
   // ── Proxy status polling ──
-  startProxyPolling(settings);
+  if (!isSaasMode()) {
+    startProxyPolling(settings);
+  }
 
   // ── Wire command menu to textarea ──
   const wireTextarea = () => {
