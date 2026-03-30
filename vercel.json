@@ -5,6 +5,14 @@
   "ignoreCommand": "node scripts/vercel-ignore-command.mjs",
   "rewrites": [
     {
+      "source": "/api/gemini",
+      "destination": "/api/gemini-proxy"
+    },
+    {
+      "source": "/api/gemini/:path*",
+      "destination": "/api/gemini-proxy?proxyPath=:path*"
+    },
+    {
       "source": "/proxy",
       "destination": "/proxy.sh"
     },
