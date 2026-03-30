@@ -1,6 +1,7 @@
 {
   "framework": null,
-  "buildCommand": "node scripts/vercel-build.mjs",
+  "buildCommand": "npx vite build",
+  "outputDirectory": "dist",
   "ignoreCommand": "node scripts/vercel-ignore-command.mjs",
   "rewrites": [
     {
