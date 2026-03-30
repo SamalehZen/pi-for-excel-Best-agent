@@ -159,9 +159,11 @@ import {
   toggleContextPopover,
   toggleThinkingPopover,
   toggleTemplatePopover,
+  updateTemplatePopoverList,
   type TemplatePopoverItem,
 } from "./status-popovers.js";
-import { BUNDLED_TEMPLATE_DEFINITIONS } from "../templates/definitions/index.js";
+import { excelRun } from "../excel/helpers.js";
+import { TEMPLATE_CATALOG, findRecommendedTemplates } from "../template-gallery/template-catalog.js";
 import { showWelcomeLogin } from "./welcome-login.js";
 import {
   SessionRuntimeManager,
@@ -1916,32 +1918,118 @@ export async function initTaskpane(opts: {
   };
 
   const openTemplatePicker = (anchor: Element): void => {
-    const templates: TemplatePopoverItem[] = BUNDLED_TEMPLATE_DEFINITIONS.map((def) => ({
-      id: def.id,
-      name: def.name,
-      category: def.category,
-      colors: [
-        def.design.palette.titleBg,
-        def.design.palette.headerBg,
-        def.design.palette.accentBg,
-        def.design.palette.totalBg,
-      ],
-    }));
+    const buildTemplateList = (recommendedIds: Set<string>): TemplatePopoverItem[] => {
+      const items: TemplatePopoverItem[] = TEMPLATE_CATALOG.map((t) => ({
+        id: t.id,
+        name: t.name,
+        category: t.category,
+        previewUrl: t.previewUrl,
+        primaryColor: t.primaryColor,
+        isRecommended: recommendedIds.has(t.id),
+      }));
+      items.sort((a, b) => {
+        if (a.isRecommended && !b.isRecommended) return -1;
+        if (!a.isRecommended && b.isRecommended) return 1;
+        return a.name.localeCompare(b.name);
+      });
+      return items;
+    };
+
+    const onSelectTemplate = (templateId: string, mode: "full" | "design_only"): void => {
+      const activeRuntime = getActiveRuntime();
+      if (!activeRuntime) {
+        showToast("No active session");
+        return;
+      }
+
+      const templateName = TEMPLATE_CATALOG.find((t) => t.id === templateId)?.name ?? templateId;
+
+      if (mode === "full") {
+        activeRuntime.actionQueue.enqueuePrompt(
+          `Apply the "${templateId}" template to the active sheet in full mode. ` +
+          `Create the complete "${templateName}" structure with all headers, sample data, formatting, ` +
+          `colors, fonts, row heights, column widths, and alternating row shading as defined in the template.`
+        );
+      } else {
+        activeRuntime.actionQueue.enqueuePrompt(
+          `Apply the "${templateId}" template to the active sheet in design_only mode. ` +
+          `Thoroughly apply ALL visual design from the "${templateName}" template to my existing data: ` +
+          `title row styling (background color, font, size), header row formatting (bold, background, font color), ` +
+          `data row fonts and sizes, alternating row shading if the template uses it, ` +
+          `column widths, row heights, accent column highlighting, total row formatting, ` +
+          `and all palette colors. Make sure every cell in the used range gets the template's font family and size. ` +
+          `Apply the design comprehensively — don't skip any rows or columns.`
+        );
+      }
+    };
 
     toggleTemplatePopover({
       anchor,
-      templates,
-      onSelectTemplate: (templateId: string) => {
-        const activeRuntime = getActiveRuntime();
-        if (!activeRuntime) {
-          showToast("No active session");
-          return;
-        }
-        activeRuntime.actionQueue.enqueuePrompt(
-          `Apply the "${templateId}" template to the active sheet in full mode.`
-        );
-      },
+      templates: buildTemplateList(new Set()),
+      loading: true,
+      onSelectTemplate,
     });
+
+    void (async () => {
+      try {
+        const hints = await excelRun(async (context) => {
+          const sheet = context.workbook.worksheets.getActiveWorksheet();
+          const usedRange = sheet.getUsedRange();
+          usedRange.load("values,rowCount,columnCount,rowIndex");
+          await context.sync();
+
+          const values = usedRange.values as unknown[][];
+          if (!values || values.length === 0) return null;
+
+          const rowCount = usedRange.rowCount;
+          const colCount = usedRange.columnCount;
+          const headers: string[] = [];
+          const keywords: string[] = [];
+          let hasDateColumns = false;
+          let hasNumericColumns = false;
+
+          for (const cell of values[0]) {
+            if (typeof cell === "string" && cell.trim()) {
+              headers.push(cell.trim());
+              keywords.push(...cell.trim().toLowerCase().split(/\s+/));
+            }
+          }
+
+          for (let r = 1; r < Math.min(values.length, 10); r++) {
+            for (const cell of values[r]) {
+              if (typeof cell === "number") {
+                hasNumericColumns = true;
+                if (cell > 1 && cell < 60000 && Number.isInteger(cell)) {
+                  hasDateColumns = true;
+                }
+              }
+              if (typeof cell === "string" && /\d{1,4}[-/]\d{1,2}[-/]\d{1,4}/.test(cell)) {
+                hasDateColumns = true;
+              }
+            }
+          }
+
+          return {
+            keywords: [...new Set(keywords)].slice(0, 20),
+            hasDateColumns,
+            hasNumericColumns,
+            columnCount: colCount,
+            rowCount,
+            headers,
+          };
+        });
+
+        if (hints) {
+          const scored = findRecommendedTemplates(hints);
+          const recommendedIds = new Set(scored.slice(0, 3).map((s) => s.id));
+          updateTemplatePopoverList(buildTemplateList(recommendedIds));
+        } else {
+          updateTemplatePopoverList(null);
+        }
+      } catch {
+        updateTemplatePopoverList(null);
+      }
+    })();
   };
 
   const openThinkingPopoverFrom = (target: Element): void => {

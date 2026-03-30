@@ -262,14 +262,20 @@ export interface TemplatePopoverItem {
   id: string;
   name: string;
   category: string;
-  /** 4 palette colors: [titleBg, headerBg, accentBg, totalBg] */
-  colors: [string, string, string, string];
+  /** Preview thumbnail URL */
+  previewUrl: string;
+  /** Primary brand color for the color strip */
+  primaryColor: string;
+  /** Whether this template is recommended for the current sheet */
+  isRecommended: boolean;
 }
 
 interface TemplatePopoverOptions {
   anchor: Element;
   templates: readonly TemplatePopoverItem[];
-  onSelectTemplate: (templateId: string) => void;
+  /** Show loading indicator while analyzing sheet */
+  loading?: boolean;
+  onSelectTemplate: (templateId: string, mode: "full" | "design_only") => void;
 }
 
 export function toggleContextPopover(opts: ContextPopoverOptions): void {
@@ -324,6 +330,148 @@ export function toggleContextPopover(opts: ContextPopoverOptions): void {
   mountPopover("context", opts.anchor, popover);
 }
 
+/** Reference to the active template popover's list container for async updates. */
+let activeTemplateListEl: HTMLDivElement | null = null;
+let activeTemplateLoadingEl: HTMLParagraphElement | null = null;
+let activeTemplateListView: HTMLDivElement | null = null;
+let activeTemplateModeView: HTMLDivElement | null = null;
+let activeTemplateOnSelect: ((id: string, mode: "full" | "design_only") => void) | null = null;
+
+/**
+ * Called from init.ts after async sheet analysis completes.
+ * Updates the popover list with new recommended templates, or just removes loading state.
+ */
+export function updateTemplatePopoverList(newTemplates: TemplatePopoverItem[] | null): void {
+  if (activeTemplateLoadingEl) {
+    activeTemplateLoadingEl.remove();
+    activeTemplateLoadingEl = null;
+  }
+
+  if (!newTemplates || !activeTemplateListEl || !activeTemplateOnSelect) return;
+
+  activeTemplateListEl.innerHTML = "";
+  renderTemplateCards(activeTemplateListEl, newTemplates, activeTemplateOnSelect);
+}
+
+function renderTemplateCards(
+  list: HTMLDivElement,
+  templates: readonly TemplatePopoverItem[],
+  onSelect: (id: string, mode: "full" | "design_only") => void,
+): void {
+  for (const template of templates) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "pi-status-popover__item pi-template-card";
+
+    const img = document.createElement("img");
+    img.className = "pi-template-card__img";
+    img.src = template.previewUrl;
+    img.alt = template.name;
+    img.loading = "lazy";
+
+    const colorStrip = document.createElement("span");
+    colorStrip.className = "pi-template-card__color-strip";
+    colorStrip.style.background = template.primaryColor;
+
+    const textWrap = document.createElement("span");
+    textWrap.className = "pi-template-card__text";
+
+    const label = document.createElement("span");
+    label.className = "pi-status-popover__item-label";
+    label.textContent = template.name;
+
+    if (template.isRecommended) {
+      const badge = document.createElement("span");
+      badge.className = "pi-template-card__badge";
+      badge.textContent = "\u2B50 Recommended";
+      label.appendChild(document.createTextNode(" "));
+      label.appendChild(badge);
+    }
+
+    const hint = document.createElement("span");
+    hint.className = "pi-status-popover__item-hint";
+    hint.textContent = template.category;
+
+    textWrap.append(label, hint);
+    button.append(img, colorStrip, textWrap);
+
+    button.addEventListener("click", () => {
+      showModeChoice(template.id, template.name, onSelect);
+    });
+
+    list.appendChild(button);
+  }
+}
+
+function showModeChoice(
+  templateId: string,
+  templateName: string,
+  onSelect: (id: string, mode: "full" | "design_only") => void,
+): void {
+  if (!activeTemplateListView || !activeTemplateModeView) return;
+
+  activeTemplateListView.style.display = "none";
+  activeTemplateModeView.style.display = "";
+  activeTemplateModeView.innerHTML = "";
+
+  const backBtn = document.createElement("button");
+  backBtn.type = "button";
+  backBtn.className = "pi-template-back";
+  backBtn.textContent = "\u2190 Back";
+  backBtn.addEventListener("click", () => {
+    if (activeTemplateModeView) activeTemplateModeView.style.display = "none";
+    if (activeTemplateListView) activeTemplateListView.style.display = "";
+  });
+
+  const modeTitle = document.createElement("h3");
+  modeTitle.className = "pi-status-popover__title";
+  modeTitle.textContent = templateName;
+
+  const modeDesc = createDescriptionBlock("How do you want to apply this template?");
+
+  const modeList = document.createElement("div");
+  modeList.className = "pi-status-popover__list";
+
+  const fullBtn = document.createElement("button");
+  fullBtn.type = "button";
+  fullBtn.className = "pi-status-popover__item pi-template-mode-btn";
+  const fullBody = document.createElement("span");
+  fullBody.className = "pi-status-popover__item-body";
+  const fullLabel = document.createElement("span");
+  fullLabel.className = "pi-status-popover__item-label";
+  fullLabel.textContent = "\uD83D\uDCCB Full Template";
+  const fullHint = document.createElement("span");
+  fullHint.className = "pi-status-popover__item-hint";
+  fullHint.textContent = "Replace sheet with complete template structure + sample data";
+  fullBody.append(fullLabel, fullHint);
+  fullBtn.appendChild(fullBody);
+  fullBtn.addEventListener("click", () => {
+    onSelect(templateId, "full");
+    closeStatusPopover();
+  });
+
+  const designBtn = document.createElement("button");
+  designBtn.type = "button";
+  designBtn.className = "pi-status-popover__item pi-template-mode-btn";
+  const designBody = document.createElement("span");
+  designBody.className = "pi-status-popover__item-body";
+  const designLabel = document.createElement("span");
+  designLabel.className = "pi-status-popover__item-label";
+  designLabel.textContent = "\uD83C\uDFA8 Design Only";
+  const designHint = document.createElement("span");
+  designHint.className = "pi-status-popover__item-hint";
+  designHint.textContent = "Apply colors, fonts & formatting to your existing data";
+  designBody.append(designLabel, designHint);
+  designBtn.appendChild(designBody);
+  designBtn.addEventListener("click", () => {
+    onSelect(templateId, "design_only");
+    closeStatusPopover();
+  });
+
+  modeList.append(fullBtn, designBtn);
+  activeTemplateModeView.append(backBtn, modeTitle, modeDesc, modeList);
+}
+
 export function toggleTemplatePopover(opts: TemplatePopoverOptions): void {
   if (shouldToggle("template", opts.anchor)) {
     closeStatusPopover();
@@ -332,61 +480,59 @@ export function toggleTemplatePopover(opts: TemplatePopoverOptions): void {
 
   const popover = createPopoverBase("template");
 
+  activeTemplateOnSelect = opts.onSelectTemplate;
+
+  const listView = document.createElement("div");
+  listView.className = "pi-template-view";
+  activeTemplateListView = listView;
+
   const title = document.createElement("h3");
   title.className = "pi-status-popover__title";
   title.textContent = "Template";
 
   const description = createDescriptionBlock("Choose a design template to apply to the active sheet.");
 
-  const list = document.createElement("div");
-  list.className = "pi-status-popover__list";
-
-  for (const template of opts.templates) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "pi-status-popover__item";
-
-    const body = document.createElement("span");
-    body.className = "pi-status-popover__item-body";
-    body.style.flexDirection = "row";
-    body.style.alignItems = "center";
-    body.style.gap = "8px";
-
-    const dotsContainer = document.createElement("span");
-    dotsContainer.className = "pi-template-dots";
-    for (const color of template.colors) {
-      const dot = document.createElement("span");
-      dot.className = "pi-template-dot";
-      dot.style.background = color;
-      dotsContainer.appendChild(dot);
-    }
-
-    const textWrap = document.createElement("span");
-    textWrap.style.display = "flex";
-    textWrap.style.flexDirection = "column";
-    textWrap.style.gap = "1px";
-
-    const label = document.createElement("span");
-    label.className = "pi-status-popover__item-label";
-    label.textContent = template.name;
-
-    const hint = document.createElement("span");
-    hint.className = "pi-status-popover__item-hint";
-    hint.textContent = template.category;
-
-    textWrap.append(label, hint);
-    body.append(dotsContainer, textWrap);
-    button.appendChild(body);
-
-    button.addEventListener("click", () => {
-      opts.onSelectTemplate(template.id);
-      closeStatusPopover();
-    });
-
-    list.appendChild(button);
+  let loadingEl: HTMLParagraphElement | null = null;
+  if (opts.loading) {
+    loadingEl = document.createElement("p");
+    loadingEl.className = "pi-template-loading";
+    loadingEl.textContent = "\u2728 Analyzing your sheet\u2026";
+    activeTemplateLoadingEl = loadingEl;
   }
 
-  popover.append(title, description, list);
+  const list = document.createElement("div");
+  list.className = "pi-status-popover__list";
+  activeTemplateListEl = list;
+
+  renderTemplateCards(list, opts.templates, opts.onSelectTemplate);
+
+  listView.append(title, description);
+  if (loadingEl) listView.appendChild(loadingEl);
+  listView.appendChild(list);
+
+  const modeView = document.createElement("div");
+  modeView.className = "pi-template-view";
+  modeView.style.display = "none";
+  activeTemplateModeView = modeView;
+
+  popover.append(listView, modeView);
+
+  const origCleanup = (): void => {
+    activeTemplateListEl = null;
+    activeTemplateLoadingEl = null;
+    activeTemplateListView = null;
+    activeTemplateModeView = null;
+    activeTemplateOnSelect = null;
+  };
+
   mountPopover("template", opts.anchor, popover);
+
+  if (activePopover) {
+    const existingCleanup = activePopover.cleanup;
+    activePopover.cleanup = () => {
+      existingCleanup();
+      origCleanup();
+    };
+  }
 }
 
