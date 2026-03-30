@@ -2,18 +2,15 @@
  * Custom Vercel build script — Build Output API v3.
  *
  * Vercel's Vite framework detection treats the project as static-only and
- * ignores the api/ directory for edge functions.  Using framework:null
- * doesn't reliably discover api/ functions either in CLI v50+.
- *
- * This script produces the Build Output API v3 directory structure
- * (.vercel/output/) so the deployment is fully deterministic:
+ * ignores the api/ directory for edge functions.  The Build Output API gives
+ * deterministic control over the deployment structure.
  *
  *   .vercel/output/
- *     config.json          — routing (rewrites, headers)
+ *     config.json          — routing (rewrites, headers, function route)
  *     static/              — files from dist/
  *     functions/
- *       api/gemini/
- *         [...path].func/  — edge function (Gemini proxy)
+ *       api/
+ *         gemini-proxy.func/  — edge function (Gemini API proxy)
  */
 
 import { execSync } from "node:child_process";
@@ -27,7 +24,7 @@ execSync("npx vite build", { stdio: "inherit" });
 
 // ── 2. Create Build Output API directory structure ──────────────────────────
 mkdirSync(`${OUTPUT}/static`, { recursive: true });
-const funcDir = `${OUTPUT}/functions/api/gemini/[...path].func`;
+const funcDir = `${OUTPUT}/functions/api/gemini-proxy.func`;
 mkdirSync(funcDir, { recursive: true });
 
 // ── 3. Copy static files from dist/ ────────────────────────────────────────
@@ -58,18 +55,16 @@ writeFileSync(
 // ── 6. Build Output API config (routing) ────────────────────────────────────
 // Convert vercel.json rewrites + headers to Build Output API routes.
 //
-// Route processing order matters in the Build Output API:
+// Route processing order:
 //   1. Header rules (continue: true — apply headers, keep matching)
 //   2. { handle: "filesystem" } — check static files AND functions
-//   3. Rewrite rules — only reached if no filesystem match
-//   4. { handle: "miss" } — final fallback phase
-//
-// Without "handle: filesystem", Vercel never looks up the functions directory
-// and all function routes return 404.
+//   3. Explicit rewrite: /api/gemini/* → gemini-proxy function
+//   4. Other rewrites (proxy, oauth callbacks)
+//   5. { handle: "miss" } — final fallback
 const vercelJson = JSON.parse(readFileSync("vercel.json", "utf-8"));
 const routes = [];
 
-// Phase 1: Headers → route with "headers" + "continue: true"
+// Phase 1: Headers
 for (const h of vercelJson.headers ?? []) {
   const headers = {};
   for (const { key, value } of h.headers) {
@@ -78,10 +73,16 @@ for (const h of vercelJson.headers ?? []) {
   routes.push({ src: h.source, headers, continue: true });
 }
 
-// Phase 2: Filesystem lookup — serves static files AND edge/serverless functions.
+// Phase 2: Filesystem lookup (static files + functions)
 routes.push({ handle: "filesystem" });
 
-// Phase 3: Rewrites — only reached for paths not matched by filesystem.
+// Phase 3: Gemini proxy — route /api/gemini/* to the edge function.
+// The function is at /api/gemini-proxy (no brackets in the name).
+// The original sub-path is passed via ?proxyPath= query parameter.
+routes.push({ src: "/api/gemini/(.+)", dest: "/api/gemini-proxy?proxyPath=$1" });
+routes.push({ src: "/api/gemini/?$", dest: "/api/gemini-proxy" });
+
+// Phase 4: Other rewrites
 for (const r of vercelJson.rewrites ?? []) {
   routes.push({ src: r.source, dest: r.destination });
 }
