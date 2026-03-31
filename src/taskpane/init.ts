@@ -841,6 +841,13 @@ export async function initTaskpane(opts: {
         getExtensionManager: () => extensionManager,
         getSessionId: () => runtimeAgent?.sessionId ?? runtimeSessionId,
         skillReadCache: runtimeSkillReadCache,
+        delegateTask: {
+          getStreamFn: () => streamFn,
+          getModel: () => runtimeAgent?.state.model ?? defaultModel,
+          getAllTools: () => runtimeAgent?.state.tools ?? [],
+          getApiKey: runtimeAgent?.getApiKey,
+          getWorkbookContext: () => undefined,
+        },
       }).filter(isRuntimeAgentTool);
 
       const gatedCoreTools = await applyExperimentalToolGates(coreTools, {

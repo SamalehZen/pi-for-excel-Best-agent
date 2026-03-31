@@ -975,6 +975,26 @@ function humanizeOperator(op: string): string {
   return MAP[op] ?? op;
 }
 
+const ROLE_LABELS: Record<string, string> = {
+  analyst: "Analyst",
+  builder: "Builder",
+  stylist: "Stylist",
+  "template-builder": "Template Builder",
+  researcher: "Researcher",
+  modeler: "Modeler",
+  debugger: "Debugger",
+};
+
+function humanizeDelegateTask(p: Record<string, unknown>): ParamItem[] {
+  const items: ParamItem[] = [];
+  const role = str(p.role);
+  if (role) items.push({ label: "Role", value: ROLE_LABELS[role] ?? role });
+  const task = str(p.task);
+  if (task) items.push({ label: "Task", value: task.length > 120 ? task.substring(0, 117) + "\u2026" : task });
+  if (p.context) items.push({ label: "Context", value: "(provided)" });
+  return items;
+}
+
 /* ── Registry ───────────────────────────────────────────────── */
 
 type HumanizerFn = (p: Record<string, unknown>) => ParamItem[];
@@ -1006,6 +1026,7 @@ const EXTRA_HUMANIZERS = {
   files: humanizeFiles,
   python_transform_range: humanizePythonTransformRange,
   execute_office_js: humanizeExecuteOfficeJs,
+  delegate_task: humanizeDelegateTask,
 } satisfies Record<AuxiliaryUiToolName, HumanizerFn>;
 
 const HUMANIZERS: Record<string, HumanizerFn> = {

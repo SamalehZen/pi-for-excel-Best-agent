@@ -17,11 +17,16 @@ import {
   createExtensionsManagerTool,
   type ExtensionsManagerToolRuntime,
 } from "./extensions-manager.js";
+import {
+  createDelegateTaskTool,
+  type DelegateTaskToolDependencies,
+} from "./delegate-task.js";
 
 export interface CreateAllToolsOptions {
   getExtensionManager?: () => ExtensionsManagerToolRuntime | null;
   getSessionId?: () => string | null;
   skillReadCache?: SkillReadCache;
+  delegateTask?: DelegateTaskToolDependencies;
 }
 
 export function createAllTools(options: CreateAllToolsOptions = {}) {
@@ -41,5 +46,6 @@ export function createAllTools(options: CreateAllToolsOptions = {}) {
     createFilesTool(),
     createExecuteOfficeJsTool(),
     createExtensionsManagerTool({ getManager: getExtensionManager }),
+    ...(options.delegateTask ? [createDelegateTaskTool(options.delegateTask)] : []),
   ];
 }

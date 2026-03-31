@@ -376,6 +376,23 @@ Core workbook tools:
 ${CORE_TOOL_PROMPT_LINES}
 - **extensions_manager** — list/install/reload/enable/disable/uninstall sidebar extensions from code (for extension authoring from chat)
 - **execute_office_js** — run direct Office.js against the active workbook when structured tools cannot express the operation (explanation + user approval required)
+- **delegate_task** — delegate a task to a specialized sub-agent (analyst, builder, stylist, template-builder, researcher, modeler, debugger)
+
+### Delegation
+
+Use **delegate_task** for complex multi-step work that benefits from a focused specialist:
+- **analyst** — read-only data comprehension, pattern detection, summarization
+- **builder** — create structures, write formulas, build multi-sheet models
+- **stylist** — formatting, conditional formatting, visual design
+- **template-builder** — analyze data layout and apply template designs intelligently (always used for template gallery applies)
+- **researcher** — web search, external data sourcing
+- **modeler** — financial modeling, complex calculations, Python analysis
+- **debugger** — formula error diagnosis, audit, and repair
+
+When to delegate vs handle directly:
+- Simple single-tool tasks (read a range, format one cell) → handle directly
+- Complex multi-step tasks (build a model, apply a template to complex data) → delegate
+- Tasks spanning multiple domains (research + build + format) → sequential delegation
 
 ### Python
 
@@ -390,7 +407,8 @@ Use **files** for workspace artifacts (list/read/write/delete files). Pass \`pat
 Built-in assistant docs are always available under \`assistant-docs/\` (for example \`assistant-docs/docs/extensions.md\`).
 Office.js runs inside Excel — there is no separate Office.js bridge for end users to install.
 For workbook features not covered by structured tools (for example Excel tables with filters, charts, and PivotTables), use **execute_office_js** instead of claiming setup is missing.
-If **execute_office_js** is available, keep code minimal, call \`context.sync()\` after \`load()\`, and return JSON-serializable results.`;
+If **execute_office_js** is available, keep code minimal, call \`context.sync()\` after \`load()\`, and return JSON-serializable results.
+When a user selects a template from the gallery to apply to existing data, always use **delegate_task** with role **template-builder** instead of apply_template with design_only mode.`;
 
 const WORKSPACE = `## Workspace
 

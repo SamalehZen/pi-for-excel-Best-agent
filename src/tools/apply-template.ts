@@ -301,7 +301,7 @@ async function executeGallery(): Promise<AgentToolResult<ApplyTemplateListDetail
     }
 
     return {
-      content: [{ type: "text", text: `User selected template **"${galleryResult.templateName}"** (ID: \`${galleryResult.templateId}\`). Use \`action: "apply"\` with \`template_id: "${galleryResult.templateId}"\` to apply it.` }],
+      content: [{ type: "text", text: `User selected template **"${galleryResult.templateName}"** (ID: \`${galleryResult.templateId}\`). Apply it using \`delegate_task\` with role **template-builder** and \`action: "apply"\` with \`template_id: "${galleryResult.templateId}"\` and \`mode: "design_only"\` to format existing data intelligently.` }],
       details: {
         kind: "apply_template_list",
         count: templates.length,
@@ -632,7 +632,7 @@ async function detectSheetStructure(
   };
 }
 
-async function applyDesignOnly(
+async function _applyDesignOnlyLegacy(
   toolCallId: string,
   params: Params,
   template: TemplateDefinition,
@@ -821,7 +821,32 @@ async function executeApply(
 
   const mode = params.mode ?? "full";
   if (mode === "design_only") {
-    return applyDesignOnly(toolCallId, params, template);
+    const palette = template.design.palette;
+    const typography = template.design.typography;
+    const paletteContext = JSON.stringify({
+      templateId: template.id,
+      templateName: template.name,
+      palette,
+      typography,
+      alternatingRows: template.design.alternatingRows,
+    });
+
+    return {
+      content: [{
+        type: "text",
+        text:
+          `Template **"${template.name}"** selected for design_only application.\n\n`
+          + `Use \`delegate_task\` with role **template-builder** to apply this template intelligently.\n\n`
+          + `Pass the following as the \`context\` parameter:\n\`\`\`json\n${paletteContext}\n\`\`\`\n\n`
+          + `The Template Builder sub-agent will analyze the data layout and apply the design zone-by-zone.`,
+      }],
+      details: {
+        kind: "apply_template_apply",
+        templateId: template.id,
+        templateName: template.name,
+        mode: "design_only",
+      },
+    };
   }
   return applyFull(toolCallId, params, template);
 }
