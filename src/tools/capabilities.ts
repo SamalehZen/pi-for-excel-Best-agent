@@ -104,7 +104,7 @@ const CORE_TOOL_CAPABILITY_METADATA = {
   apply_template: {
     tier: "core",
     category: "format",
-    promptDescription: "list/preview/apply design templates (6 bundled: timesheet, attendance, scorecard, forecast, contest tracker, daily report); mode full (blank sheet) or design_only (existing data)",
+    promptDescription: "list/preview/apply design templates (11 bundled: timesheet, attendance, scorecard, forecast, contest tracker, daily report, work planner, goal tracking, resource planning, sales lead tracking, employee schedule); mode full (blank sheet) or design_only (existing data)",
   },
   workbook_history: {
     tier: "core",
@@ -264,6 +264,7 @@ export const AUXILIARY_UI_TOOL_NAMES = [
   "files",
   "python_transform_range",
   "execute_office_js",
+  "delegate_task",
 ] as const;
 
 export type AuxiliaryUiToolName = (typeof AUXILIARY_UI_TOOL_NAMES)[number];
@@ -304,6 +305,7 @@ export const TOOL_UI_METADATA = {
   files: { renderer: true, humanizer: true },
   python_transform_range: { renderer: true, humanizer: true },
   execute_office_js: { renderer: true, humanizer: true },
+  delegate_task: { renderer: true, humanizer: true },
 } as const satisfies Record<UiToolName, ToolUiMetadata>;
 
 export const TOOL_NAMES_WITH_RENDERER: readonly UiToolName[] = UI_TOOL_NAMES

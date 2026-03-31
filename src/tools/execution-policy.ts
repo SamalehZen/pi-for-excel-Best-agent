@@ -40,6 +40,8 @@ const ALWAYS_MUTATE_TOOLS = new Set<string>([
   "python_transform_range",
   // Arbitrary Office.js can mutate workbook content and structure.
   "execute_office_js",
+  // Sub-agents may call mutating tools internally.
+  "delegate_task",
 ]);
 
 function isRecord(value: unknown): value is Record<string, unknown> {

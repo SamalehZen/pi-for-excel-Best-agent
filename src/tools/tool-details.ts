@@ -1171,3 +1171,33 @@ export function isFilesDeleteDetails(value: unknown): value is FilesDeleteDetail
     isOptionalFilesWorkbookTagDetails(value.workbookTag)
   );
 }
+
+/* ── Delegate Task ─────────────────────────────────────────── */
+
+export type DelegateTaskStatus = "completed" | "failed" | "max_turns_reached";
+
+export interface DelegateTaskDetails {
+  kind: "delegate_task";
+  roleId: string;
+  roleName: string;
+  status: DelegateTaskStatus;
+  summary: string;
+  toolCallCount: number;
+  turnsUsed: number;
+  errors: string[];
+}
+
+export function isDelegateTaskDetails(value: unknown): value is DelegateTaskDetails {
+  if (!isRecord(value)) return false;
+  if (value.kind !== "delegate_task") return false;
+
+  return (
+    typeof value.roleId === "string" &&
+    typeof value.roleName === "string" &&
+    typeof value.status === "string" &&
+    typeof value.summary === "string" &&
+    typeof value.toolCallCount === "number" &&
+    typeof value.turnsUsed === "number" &&
+    Array.isArray(value.errors)
+  );
+}
