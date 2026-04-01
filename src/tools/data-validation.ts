@@ -66,18 +66,31 @@ const VALIDATION_TYPES = [
 
 type SupportedValidationType = (typeof VALIDATION_TYPES)[number];
 
-const OPERATOR_MAP = {
-  between: Excel.DataValidationOperator.between,
-  notBetween: Excel.DataValidationOperator.notBetween,
-  equalTo: Excel.DataValidationOperator.equalTo,
-  notEqualTo: Excel.DataValidationOperator.notEqualTo,
-  greaterThan: Excel.DataValidationOperator.greaterThan,
-  lessThan: Excel.DataValidationOperator.lessThan,
-  greaterThanOrEqualTo: Excel.DataValidationOperator.greaterThanOrEqualTo,
-  lessThanOrEqualTo: Excel.DataValidationOperator.lessThanOrEqualTo,
-} as const;
+const VALID_OPERATORS = [
+  "between", "notBetween", "equalTo", "notEqualTo",
+  "greaterThan", "lessThan", "greaterThanOrEqualTo", "lessThanOrEqualTo",
+] as const;
 
-type SupportedValidationOperator = keyof typeof OPERATOR_MAP;
+type SupportedValidationOperator = (typeof VALID_OPERATORS)[number];
+
+let _operatorMap: Record<SupportedValidationOperator, Excel.DataValidationOperator> | null = null;
+function getOperatorMap(): Record<SupportedValidationOperator, Excel.DataValidationOperator> {
+  if (!_operatorMap) {
+    _operatorMap = {
+      between: Excel.DataValidationOperator.between,
+      notBetween: Excel.DataValidationOperator.notBetween,
+      equalTo: Excel.DataValidationOperator.equalTo,
+      notEqualTo: Excel.DataValidationOperator.notEqualTo,
+      greaterThan: Excel.DataValidationOperator.greaterThan,
+      lessThan: Excel.DataValidationOperator.lessThan,
+      greaterThanOrEqualTo: Excel.DataValidationOperator.greaterThanOrEqualTo,
+      lessThanOrEqualTo: Excel.DataValidationOperator.lessThanOrEqualTo,
+    };
+  }
+  return _operatorMap;
+}
+
+const OPERATOR_MAP_KEYS = VALID_OPERATORS;
 
 const BETWEEN_OPERATORS = new Set<SupportedValidationOperator>(["between", "notBetween"]);
 const COMPARISON_TYPES = new Set<SupportedValidationType>([
@@ -111,7 +124,7 @@ function normalizeText(value: string): string {
 function normalizeOperator(value: string | undefined): SupportedValidationOperator | null {
   if (!value) return null;
   const normalized = normalizeText(value);
-  return normalized in OPERATOR_MAP
+  return normalized in getOperatorMap()
     ? normalized as SupportedValidationOperator
     : null;
 }
@@ -268,7 +281,7 @@ function buildRule(params: Params, sheetName: string): { rule: Excel.DataValidat
 
   const operator = normalizeOperator(params.operator);
   if (!operator) {
-    throw new Error(`operator is required for type="${type}". Valid values: ${Object.keys(OPERATOR_MAP).join(", ")}.`);
+    throw new Error(`operator is required for type="${type}". Valid values: ${Object.keys(getOperatorMap()).join(", ")}.`);
   }
 
   if (params.formula1 === undefined || params.formula1 === "") {
@@ -292,7 +305,7 @@ function buildRule(params: Params, sheetName: string): { rule: Excel.DataValidat
         rule: {
           wholeNumber: {
             formula1: params.formula1,
-            operator: OPERATOR_MAP[operator],
+            operator: getOperatorMap()[operator],
             ...(params.formula2 !== undefined && params.formula2 !== "" ? { formula2: params.formula2 } : {}),
           },
         },
@@ -303,7 +316,7 @@ function buildRule(params: Params, sheetName: string): { rule: Excel.DataValidat
         rule: {
           decimal: {
             formula1: params.formula1,
-            operator: OPERATOR_MAP[operator],
+            operator: getOperatorMap()[operator],
             ...(params.formula2 !== undefined && params.formula2 !== "" ? { formula2: params.formula2 } : {}),
           },
         },
@@ -320,7 +333,7 @@ function buildRule(params: Params, sheetName: string): { rule: Excel.DataValidat
         rule: {
           date: {
             formula1: params.formula1,
-            operator: OPERATOR_MAP[operator],
+            operator: getOperatorMap()[operator],
             ...(params.formula2 !== undefined && params.formula2 !== "" ? { formula2: params.formula2 } : {}),
           },
         },
@@ -331,7 +344,7 @@ function buildRule(params: Params, sheetName: string): { rule: Excel.DataValidat
         rule: {
           textLength: {
             formula1: params.formula1,
-            operator: OPERATOR_MAP[operator],
+            operator: getOperatorMap()[operator],
             ...(params.formula2 !== undefined && params.formula2 !== "" ? { formula2: params.formula2 } : {}),
           },
         },

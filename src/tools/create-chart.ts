@@ -59,35 +59,53 @@ type ChartAction = NonNullable<Params["action"]>;
 const VALID_CHART_TYPES = ["column", "bar", "line", "pie", "scatter", "area", "doughnut", "radar"] as const;
 type SupportedChartType = (typeof VALID_CHART_TYPES)[number];
 
-const CHART_TYPE_MAP: Record<SupportedChartType, Excel.ChartType> = {
-  column: Excel.ChartType.columnClustered,
-  bar: Excel.ChartType.barClustered,
-  line: Excel.ChartType.line,
-  pie: Excel.ChartType.pie,
-  scatter: Excel.ChartType.xyscatter,
-  area: Excel.ChartType.area,
-  doughnut: Excel.ChartType.doughnut,
-  radar: Excel.ChartType.radar,
-};
+let _chartTypeMap: Record<SupportedChartType, Excel.ChartType> | null = null;
+function getChartTypeMap(): Record<SupportedChartType, Excel.ChartType> {
+  if (!_chartTypeMap) {
+    _chartTypeMap = {
+      column: Excel.ChartType.columnClustered,
+      bar: Excel.ChartType.barClustered,
+      line: Excel.ChartType.line,
+      pie: Excel.ChartType.pie,
+      scatter: Excel.ChartType.xyscatter,
+      area: Excel.ChartType.area,
+      doughnut: Excel.ChartType.doughnut,
+      radar: Excel.ChartType.radar,
+    };
+  }
+  return _chartTypeMap;
+}
 
 const VALID_SERIES_BY = ["auto", "rows", "columns"] as const;
 type SupportedSeriesBy = (typeof VALID_SERIES_BY)[number];
 
-const SERIES_BY_MAP: Record<SupportedSeriesBy, Excel.ChartSeriesBy> = {
-  auto: Excel.ChartSeriesBy.auto,
-  rows: Excel.ChartSeriesBy.rows,
-  columns: Excel.ChartSeriesBy.columns,
-};
+let _seriesByMap: Record<SupportedSeriesBy, Excel.ChartSeriesBy> | null = null;
+function getSeriesByMap(): Record<SupportedSeriesBy, Excel.ChartSeriesBy> {
+  if (!_seriesByMap) {
+    _seriesByMap = {
+      auto: Excel.ChartSeriesBy.auto,
+      rows: Excel.ChartSeriesBy.rows,
+      columns: Excel.ChartSeriesBy.columns,
+    };
+  }
+  return _seriesByMap;
+}
 
 const VALID_LEGEND_POSITIONS = ["top", "bottom", "left", "right"] as const;
 type SupportedLegendPosition = (typeof VALID_LEGEND_POSITIONS)[number];
 
-const LEGEND_POSITION_MAP: Record<SupportedLegendPosition, Excel.ChartLegendPosition> = {
-  top: Excel.ChartLegendPosition.top,
-  bottom: Excel.ChartLegendPosition.bottom,
-  left: Excel.ChartLegendPosition.left,
-  right: Excel.ChartLegendPosition.right,
-};
+let _legendPositionMap: Record<SupportedLegendPosition, Excel.ChartLegendPosition> | null = null;
+function getLegendPositionMap(): Record<SupportedLegendPosition, Excel.ChartLegendPosition> {
+  if (!_legendPositionMap) {
+    _legendPositionMap = {
+      top: Excel.ChartLegendPosition.top,
+      bottom: Excel.ChartLegendPosition.bottom,
+      left: Excel.ChartLegendPosition.left,
+      right: Excel.ChartLegendPosition.right,
+    };
+  }
+  return _legendPositionMap;
+}
 
 const AXISLESS_CHART_TYPES = new Set<SupportedChartType>(["pie", "doughnut"]);
 
@@ -331,16 +349,16 @@ export function createCreateChartTool(): AgentTool<typeof schema, CreateChartDet
             }
 
             const chart = chartSheet.charts.add(
-              CHART_TYPE_MAP[chartTypeKey],
+              getChartTypeMap()[chartTypeKey],
               sourceRange,
-              SERIES_BY_MAP[seriesByKey],
+              getSeriesByMap()[seriesByKey],
             );
 
             chart.setPosition(targetRange);
             chart.width = width;
             chart.height = height;
             chart.legend.visible = params.show_legend ?? true;
-            chart.legend.position = LEGEND_POSITION_MAP[legendPositionKey];
+            chart.legend.position = getLegendPositionMap()[legendPositionKey];
             chart.dataLabels.showValue = params.show_data_labels ?? false;
 
             if (params.title !== undefined) {
@@ -440,7 +458,7 @@ export function createCreateChartTool(): AgentTool<typeof schema, CreateChartDet
             await context.sync();
 
             if (chartTypeKey) {
-              chart.chartType = CHART_TYPE_MAP[chartTypeKey];
+              chart.chartType = getChartTypeMap()[chartTypeKey];
             }
 
             let sourceAddress: string | undefined;
@@ -463,7 +481,7 @@ export function createCreateChartTool(): AgentTool<typeof schema, CreateChartDet
               }
 
               const seriesByKey = resolveSeriesByKey(params.series_by ?? DEFAULT_SERIES_BY) ?? DEFAULT_SERIES_BY;
-              chart.setData(sourceRange, SERIES_BY_MAP[seriesByKey]);
+              chart.setData(sourceRange, getSeriesByMap()[seriesByKey]);
               sourceAddress = qualifiedAddress(sourceSheet.name, sourceRange.address);
             }
 
@@ -508,7 +526,7 @@ export function createCreateChartTool(): AgentTool<typeof schema, CreateChartDet
             if (params.width !== undefined) chart.width = params.width;
             if (params.height !== undefined) chart.height = params.height;
             if (params.show_legend !== undefined) chart.legend.visible = params.show_legend;
-            if (legendPositionKey) chart.legend.position = LEGEND_POSITION_MAP[legendPositionKey];
+            if (legendPositionKey) chart.legend.position = getLegendPositionMap()[legendPositionKey];
             if (params.show_data_labels !== undefined) chart.dataLabels.showValue = params.show_data_labels;
 
             await context.sync();

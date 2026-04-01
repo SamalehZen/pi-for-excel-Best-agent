@@ -32,21 +32,35 @@ const schema = Type.Object({
 
 type Params = Static<typeof schema>;
 
-const COPY_TYPE_MAP = {
-  all: Excel.RangeCopyType.all,
-  values: Excel.RangeCopyType.values,
-  formats: Excel.RangeCopyType.formats,
-  formulas: Excel.RangeCopyType.formulas,
-} as const;
+const VALID_COPY_TYPES = ["all", "values", "formats", "formulas"] as const;
+type SupportedCopyType = (typeof VALID_COPY_TYPES)[number];
 
-type SupportedCopyType = keyof typeof COPY_TYPE_MAP;
+let _copyTypeMap: Record<SupportedCopyType, Excel.RangeCopyType> | null = null;
+function getCopyTypeMap(): Record<SupportedCopyType, Excel.RangeCopyType> {
+  if (!_copyTypeMap) {
+    _copyTypeMap = {
+      all: Excel.RangeCopyType.all,
+      values: Excel.RangeCopyType.values,
+      formats: Excel.RangeCopyType.formats,
+      formulas: Excel.RangeCopyType.formulas,
+    };
+  }
+  return _copyTypeMap;
+}
 
-const DELETE_SHIFT_MAP = {
-  up: Excel.DeleteShiftDirection.up,
-  left: Excel.DeleteShiftDirection.left,
-} as const;
+const VALID_DELETE_SHIFTS = ["up", "left"] as const;
+type SupportedDeleteShift = (typeof VALID_DELETE_SHIFTS)[number];
 
-type SupportedDeleteShift = keyof typeof DELETE_SHIFT_MAP;
+let _deleteShiftMap: Record<SupportedDeleteShift, Excel.DeleteShiftDirection> | null = null;
+function getDeleteShiftMap(): Record<SupportedDeleteShift, Excel.DeleteShiftDirection> {
+  if (!_deleteShiftMap) {
+    _deleteShiftMap = {
+      up: Excel.DeleteShiftDirection.up,
+      left: Excel.DeleteShiftDirection.left,
+    };
+  }
+  return _deleteShiftMap;
+}
 
 interface CopyRangeResult {
   sourceRange: string;
@@ -66,12 +80,12 @@ function normalizeText(value: string): string {
 
 function normalizeCopyType(value: string | undefined): SupportedCopyType | null {
   const normalized = normalizeText(value ?? "all");
-  return normalized in COPY_TYPE_MAP ? normalized as SupportedCopyType : null;
+  return normalized in getCopyTypeMap() ? normalized as SupportedCopyType : null;
 }
 
 function normalizeShiftDirection(value: string | undefined): SupportedDeleteShift | null {
   const normalized = normalizeText(value ?? "up");
-  return normalized in DELETE_SHIFT_MAP ? normalized as SupportedDeleteShift : null;
+  return normalized in getDeleteShiftMap() ? normalized as SupportedDeleteShift : null;
 }
 
 function ensureSingleCell(address: string, paramName: string): void {
@@ -98,7 +112,7 @@ async function copyRange(params: Params): Promise<AgentToolResult<RangeOperation
   const copyType = normalizeCopyType(params.copy_type);
   if (!copyType) {
     return {
-      content: [{ type: "text", text: `Error: invalid copy_type "${params.copy_type ?? ""}". Valid values: ${Object.keys(COPY_TYPE_MAP).join(", ")}.` }],
+      content: [{ type: "text", text: `Error: invalid copy_type "${params.copy_type ?? ""}". Valid values: ${Object.keys(getCopyTypeMap()).join(", ")}.` }],
       details: {
         kind: "range_operations",
         action: "copy",
@@ -123,7 +137,7 @@ async function copyRange(params: Params): Promise<AgentToolResult<RangeOperation
     targetRange.load("address");
     await context.sync();
 
-    targetAnchor.copyFrom(sourceRange, COPY_TYPE_MAP[copyType]);
+    targetAnchor.copyFrom(sourceRange, getCopyTypeMap()[copyType]);
     await context.sync();
 
     return {
@@ -150,7 +164,7 @@ async function deleteRange(params: Params): Promise<AgentToolResult<RangeOperati
   const shiftDirection = normalizeShiftDirection(params.shift_direction);
   if (!shiftDirection) {
     return {
-      content: [{ type: "text", text: `Error: invalid shift_direction "${params.shift_direction ?? ""}". Valid values: ${Object.keys(DELETE_SHIFT_MAP).join(", ")}.` }],
+      content: [{ type: "text", text: `Error: invalid shift_direction "${params.shift_direction ?? ""}". Valid values: ${Object.keys(getDeleteShiftMap()).join(", ")}.` }],
       details: {
         kind: "range_operations",
         action: "delete",
@@ -165,7 +179,7 @@ async function deleteRange(params: Params): Promise<AgentToolResult<RangeOperati
     await context.sync();
 
     const fullRange = qualifiedAddress(sheet.name, range.address);
-    range.delete(DELETE_SHIFT_MAP[shiftDirection]);
+    range.delete(getDeleteShiftMap()[shiftDirection]);
     await context.sync();
 
     return {

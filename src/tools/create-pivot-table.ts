@@ -47,13 +47,19 @@ type PivotAction = NonNullable<Params["action"]>;
 const VALID_AGGREGATIONS = ["sum", "count", "average", "max", "min"] as const;
 type SupportedAggregation = (typeof VALID_AGGREGATIONS)[number];
 
-const AGGREGATION_FUNCTION_MAP: Record<SupportedAggregation, Excel.AggregationFunction> = {
-  sum: Excel.AggregationFunction.sum,
-  count: Excel.AggregationFunction.count,
-  average: Excel.AggregationFunction.average,
-  max: Excel.AggregationFunction.max,
-  min: Excel.AggregationFunction.min,
-};
+let _aggregationFunctionMap: Record<SupportedAggregation, Excel.AggregationFunction> | null = null;
+function getAggregationFunctionMap(): Record<SupportedAggregation, Excel.AggregationFunction> {
+  if (!_aggregationFunctionMap) {
+    _aggregationFunctionMap = {
+      sum: Excel.AggregationFunction.sum,
+      count: Excel.AggregationFunction.count,
+      average: Excel.AggregationFunction.average,
+      max: Excel.AggregationFunction.max,
+      min: Excel.AggregationFunction.min,
+    };
+  }
+  return _aggregationFunctionMap;
+}
 
 const DEFAULT_ACTION: PivotAction = "create";
 const DEFAULT_AGGREGATION: SupportedAggregation = "sum";
@@ -302,7 +308,7 @@ export function createCreatePivotTableTool(): AgentTool<typeof schema, CreatePiv
 
             for (const valueName of valueNames) {
               const dataHierarchy = pivotTable.dataHierarchies.add(requireHierarchy(valueName, hierarchyLookup));
-              dataHierarchy.summarizeBy = AGGREGATION_FUNCTION_MAP[aggregationKey];
+              dataHierarchy.summarizeBy = getAggregationFunctionMap()[aggregationKey];
             }
 
             return {
@@ -449,12 +455,12 @@ export function createCreatePivotTableTool(): AgentTool<typeof schema, CreatePiv
               for (const field of valueNames) {
                 const hierarchy = pivot.dataHierarchies.add(requireHierarchy(field, hierarchyLookup));
                 if (aggregationKey) {
-                  hierarchy.summarizeBy = AGGREGATION_FUNCTION_MAP[aggregationKey];
+                  hierarchy.summarizeBy = getAggregationFunctionMap()[aggregationKey];
                 }
               }
             } else if (aggregationKey) {
               for (const hierarchy of pivot.dataHierarchies.items) {
-                hierarchy.summarizeBy = AGGREGATION_FUNCTION_MAP[aggregationKey];
+                hierarchy.summarizeBy = getAggregationFunctionMap()[aggregationKey];
               }
             }
 
