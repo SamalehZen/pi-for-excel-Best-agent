@@ -1,0 +1,27 @@
+markdown-block a[href^="#cite:"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--pi-green);
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid oklch(0.45 0.12 160 / 0.18);
+  background: oklch(0.98 0.02 160 / 0.75);
+  border-radius: 999px;
+  padding: 0 6px;
+  transition:
+    background-color var(--duration-fast),
+    border-color var(--duration-fast),
+    color var(--duration-fast);
+}
+
+markdown-block a[href^="#cite:"]:hover {
+  color: var(--pi-green);
+  border-color: oklch(0.45 0.12 160 / 0.32);
+  background: oklch(0.96 0.04 160 / 0.95);
+}
+
+markdown-block a[href^="#cite:"]:focus-visible {
+  outline: 2px solid oklch(0.45 0.12 160 / 0.4);
+  outline-offset: 2px;
+}

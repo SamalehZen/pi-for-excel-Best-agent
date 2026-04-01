@@ -122,6 +122,23 @@ void test("system prompt mentions files workspace and built-in docs prefix", () 
   assert.match(prompt, /assistant-docs\//i);
 });
 
+void test("system prompt includes citation guidance after tools", () => {
+  const prompt = buildSystemPrompt();
+  assert.match(prompt, /## Citations/);
+  assert.match(prompt, /\[Sheet Name\]\(#cite:SheetName\)/);
+  assert.match(prompt, /\[A1:B10\]\(#cite:SheetName!A1:B10\)/);
+
+  const toolsIdx = prompt.indexOf("## Tools");
+  const citationsIdx = prompt.indexOf("## Citations");
+  const workspaceIdx = prompt.indexOf("## Workspace");
+
+  assert.ok(toolsIdx > -1, "Tools section should exist");
+  assert.ok(citationsIdx > -1, "Citations section should exist");
+  assert.ok(workspaceIdx > -1, "Workspace section should exist");
+  assert.ok(toolsIdx < citationsIdx, "Citations should come after Tools");
+  assert.ok(citationsIdx < workspaceIdx, "Citations should come before Workspace");
+});
+
 void test("system prompt includes workspace folder conventions", () => {
   const prompt = buildSystemPrompt();
   assert.match(prompt, /## Workspace/);

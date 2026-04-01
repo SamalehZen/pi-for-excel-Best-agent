@@ -16,6 +16,13 @@ import { excelRun, parseRangeRef } from "../excel/helpers.js";
 const DEBOUNCE_MS = 300;
 let lastNavTime = 0;
 
+function shouldDebounceNavigation(): boolean {
+  const now = Date.now();
+  if (now - lastNavTime < DEBOUNCE_MS) return true;
+  lastNavTime = now;
+  return false;
+}
+
 /* ── Excel navigation ───────────────────────────────────────── */
 
 /**
@@ -30,6 +37,19 @@ function firstSubRange(address: string): string {
 }
 
 /**
+ * Navigate to a worksheet (activate its tab) without selecting a range.
+ */
+export async function navigateToWorksheet(sheetName: string): Promise<void> {
+  if (shouldDebounceNavigation()) return;
+
+  await excelRun(async (ctx) => {
+    const ws = ctx.workbook.worksheets.getItem(sheetName);
+    ws.activate();
+    await ctx.sync();
+  });
+}
+
+/**
  * Navigate Excel to the given address and select it.
  *
  * For multi-ranges (comma-separated), navigates to the first
@@ -39,10 +59,8 @@ function firstSubRange(address: string): string {
  * selects the range which scrolls the viewport and applies
  * Excel's native blue selection highlight.
  */
-async function navigateToRange(address: string): Promise<void> {
-  const now = Date.now();
-  if (now - lastNavTime < DEBOUNCE_MS) return;
-  lastNavTime = now;
+export async function navigateToAddress(address: string): Promise<void> {
+  if (shouldDebounceNavigation()) return;
 
   const target = firstSubRange(address);
   const parsed = parseRangeRef(target);
@@ -79,7 +97,7 @@ export function cellRef(address: string): TemplateResult {
     @click=${(e: Event) => {
       e.preventDefault();
       e.stopPropagation();
-      void navigateToRange(address);
+      void navigateToAddress(address);
     }}
   >${address}</a>`;
 }
@@ -99,7 +117,7 @@ export function cellRefDisplay(
     @click=${(e: Event) => {
       e.preventDefault();
       e.stopPropagation();
-      void navigateToRange(fullAddress);
+      void navigateToAddress(fullAddress);
     }}
   >${display}</a>`;
 }

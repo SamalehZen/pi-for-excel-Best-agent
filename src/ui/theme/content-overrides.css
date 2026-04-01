@@ -5,6 +5,7 @@
  */
 
 @import "./content/messages.css";
+@import "./content/citations.css";
 @import "./content/tool-cards.css";
 @import "./content/csv-table.css";
 @import "./content/dependency-tree.css";

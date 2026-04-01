@@ -17,6 +17,7 @@ import "./pi-input.js";
 import "./working-indicator.js";
 import { initToolGrouping } from "./tool-grouping.js";
 import { applyMessageStyleHooks } from "./message-style-hooks.js";
+import { findCiteAnchor, navigateToCitation, parseCiteHref } from "./citations.js";
 import type { PiInput } from "./pi-input.js";
 import { isDebugEnabled, formatK } from "../debug/debug.js";
 import {
@@ -214,6 +215,23 @@ export class PiSidebar extends LitElement {
       this._payloadSnapshots = [];
     }
   };
+  private readonly _onCitationClick = (event: Event) => {
+    const anchor = findCiteAnchor(event);
+    if (!anchor) return;
+
+    const href = anchor.getAttribute("href");
+    if (!href) return;
+
+    const cite = parseCiteHref(href);
+    if (!cite) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    void navigateToCitation(cite).catch((error: unknown) => {
+      console.warn("Failed to navigate to citation:", error);
+    });
+  };
 
   getInput(): PiInput | undefined { return this._input ?? undefined; }
   getTextarea(): HTMLTextAreaElement | undefined { return this._input?.getTextarea(); }
@@ -278,6 +296,7 @@ export class PiSidebar extends LitElement {
     document.addEventListener("pi:debug-changed", this._onPayloadUpdate);
     document.addEventListener("keydown", this._onEscapeKey);
     window.addEventListener("resize", this._onWindowResize);
+    this.addEventListener("click", this._onCitationClick);
     this._onPayloadUpdate();
   }
 
@@ -302,6 +321,7 @@ export class PiSidebar extends LitElement {
     document.removeEventListener("pi:debug-changed", this._onPayloadUpdate);
     document.removeEventListener("keydown", this._onEscapeKey);
     window.removeEventListener("resize", this._onWindowResize);
+    this.removeEventListener("click", this._onCitationClick);
     this._detachUtilitiesMenuDocumentListener();
     this._detachTabContextMenuDocumentListener();
   }
