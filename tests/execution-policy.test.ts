@@ -32,6 +32,29 @@ void test("classifies modify_structure as structure-impact mutate", () => {
   assert.equal(getToolContextImpact("modify_structure", { action: "add_sheet" }), "structure");
 });
 
+void test("classifies chart, table, and pivot creation as workbook mutations", () => {
+  assert.equal(getToolExecutionMode("create_chart", { data_range: "Sheet1!A1:B5" }), "mutate");
+  assert.equal(getToolContextImpact("create_chart", { data_range: "Sheet1!A1:B5" }), "content");
+
+  assert.equal(getToolExecutionMode("create_table", { range: "Sheet1!A1:B5" }), "mutate");
+  assert.equal(getToolContextImpact("create_table", { range: "Sheet1!A1:B5" }), "structure");
+
+  assert.equal(
+    getToolExecutionMode("create_pivot_table", {
+      source_range: "Data!A1:C20",
+      target_cell: "Pivot!A1",
+    }),
+    "mutate",
+  );
+  assert.equal(
+    getToolContextImpact("create_pivot_table", {
+      source_range: "Data!A1:C20",
+      target_cell: "Pivot!A1",
+    }),
+    "structure",
+  );
+});
+
 void test("classifies comments read vs mutate actions", () => {
   assert.equal(getToolExecutionMode("comments", { action: "read" }), "read");
   assert.equal(getToolContextImpact("comments", { action: "read" }), "none");

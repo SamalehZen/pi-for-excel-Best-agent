@@ -811,6 +811,18 @@ function describeToolCall(
         address: resolved,
       };
     }
+    case "create_chart": {
+      const chartType = p.chart_type as string | undefined;
+      return { action: "Create chart", detail: chartType ?? "chart" };
+    }
+    case "create_table": {
+      const tableRange = p.range as string | undefined;
+      return { action: "Create table", detail: tableRange ?? "range" };
+    }
+    case "create_pivot_table": {
+      const source = p.source_range as string | undefined;
+      return { action: "Create pivot table", detail: source ?? "data" };
+    }
     case "conditional_format": {
       const recovery = recoveryBadgeForDetails(details);
       return {

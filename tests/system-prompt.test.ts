@@ -147,7 +147,7 @@ void test("system prompt documents execute_office_js safety guidance", () => {
   assert.match(prompt, /\*\*execute_office_js\*\*/);
   assert.match(prompt, /Office\.js/i);
   assert.match(prompt, /there is no separate Office\.js bridge/i);
-  assert.match(prompt, /tables with filters, charts, and PivotTables/i);
+  assert.match(prompt, /data validation rules, sparklines, or named range management/i);
   assert.match(prompt, /explanation \+ user approval required/i);
   assert.match(prompt, /context\.sync\(\)/i);
 });
