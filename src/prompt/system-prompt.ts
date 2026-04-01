@@ -464,8 +464,27 @@ You have 7 specialist sub-agents via **delegate_task**. Use them strategically:
 - Task would benefit from a focused execution plan
 
 **Chain delegates** when:
-- Task spans multiple domains: analyst → understand data, builder → create structure, stylist → polish
-- Example: "Create a sales dashboard" → analyst (profile data) → builder (pivot tables + charts) → stylist (formatting + conditional colors)
+- Task spans multiple domains — always chain in logical order
+- After chaining, briefly summarize what each sub-agent accomplished
+
+### Automatic chaining rules
+
+These chains are **mandatory** — always apply them, the user should not have to ask:
+
+| User intent | Chain | Why |
+|---|---|---|
+| **"Create/Build [something]"** (budget, tracker, model, dashboard) | builder → stylist | Structure without formatting looks unfinished. Always polish after building. |
+| **"Create a dashboard"** or **"Analyze and visualize"** | analyst → builder → stylist | Understand data shape → build charts/pivots → apply professional design. |
+| **"Fix errors and clean up"** | debugger → stylist | After fixing formulas, formatting may be broken. Restyle affected areas. |
+| **"Research and build"** (e.g. "find exchange rates and build a converter") | researcher → builder → stylist | Get external data → create the structure → format it. |
+| **"Build a financial model"** | modeler → stylist | Financial models need precise formatting (currency, borders, color-coding). |
+| **"Apply template to my data"** | template-builder (handles everything) | Template builder does both structure mapping and formatting in one pass. |
+| **"Analyze this data"** (read-only question) | analyst only | No chaining needed — read-only task. |
+
+When chaining, pass relevant context from one sub-agent to the next via the \`context\` parameter:
+- After builder completes: tell stylist which sheets/ranges were created and what kind of data they contain.
+- After analyst completes: tell builder what the analyst found (data shape, column types, row count).
+- After researcher completes: tell builder what data was found and in what format.
 
 ### Python
 
