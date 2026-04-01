@@ -24,6 +24,7 @@ const ALWAYS_READ_TOOLS = new Set<string>([
   "web_search",
   "fetch_page",
   "mcp",
+  "bash",
   // Workspace file operations do not mutate the workbook.
   "files",
   // Extension registry operations mutate local settings/runtime, not workbook content.

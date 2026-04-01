@@ -131,6 +131,9 @@ import {
   WorkbookSaveBoundaryMonitor,
   startWorkbookSaveBoundaryPolling,
 } from "../workbook/save-boundary-monitor.js";
+import { getExcelCustomCommands } from "../vfs/custom-commands.js";
+import { OFFICEJS_API_DOCS_PATH, getOfficeJsDocsContent } from "../vfs/officejs-docs.js";
+import { setCustomCommands, setStaticFiles } from "../vfs/index.js";
 
 import { createContextInjector } from "./context-injection.js";
 import { pickDefaultModel } from "./default-model.js";
@@ -215,6 +218,11 @@ export async function initTaskpane(opts: {
   const { appEl, errorRoot } = opts;
 
   const changeTracker = new ChangeTracker();
+
+  setStaticFiles({
+    [OFFICEJS_API_DOCS_PATH]: getOfficeJsDocsContent(),
+  });
+  setCustomCommands(getExcelCustomCommands);
 
   // 1. Storage
   const { providerKeys, sessions, settings, customProviders } = initAppStorage();

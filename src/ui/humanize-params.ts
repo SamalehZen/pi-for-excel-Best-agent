@@ -1042,6 +1042,18 @@ function humanizeExecuteOfficeJs(p: Record<string, unknown>): ParamItem[] {
   return items;
 }
 
+function humanizeBash(p: Record<string, unknown>): ParamItem[] {
+  const items: ParamItem[] = [];
+  const command = str(p.command);
+
+  if (command) {
+    const preview = command.length > 80 ? `${command.substring(0, 77)}...` : command;
+    items.push({ label: "Command", value: preview });
+  }
+
+  return items;
+}
+
 /* ── Shared helpers ─────────────────────────────────────────── */
 
 /** Join an array of mixed text/TemplateResult with comma separators. */
@@ -1124,6 +1136,7 @@ const EXTRA_HUMANIZERS = {
   python_transform_range: humanizePythonTransformRange,
   execute_office_js: humanizeExecuteOfficeJs,
   delegate_task: humanizeDelegateTask,
+  bash: humanizeBash,
 } satisfies Record<AuxiliaryUiToolName, HumanizerFn>;
 
 const HUMANIZERS: Record<string, HumanizerFn> = {

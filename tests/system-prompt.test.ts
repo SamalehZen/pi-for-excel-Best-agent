@@ -4,6 +4,7 @@ import { test } from "node:test";
 import { buildSystemPrompt } from "../src/prompt/system-prompt.ts";
 import { resolveConventions } from "../src/conventions/store.ts";
 import type { LocalServiceEntry } from "../src/tools/bridge-health.ts";
+import { OFFICEJS_API_DOCS_PATH } from "../src/vfs/officejs-docs.ts";
 
 void test("system prompt includes default placeholders when instructions are absent", () => {
   const prompt = buildSystemPrompt();
@@ -150,6 +151,16 @@ void test("system prompt documents execute_office_js safety guidance", () => {
   assert.match(prompt, /data validation rules, sparklines, or named range management/i);
   assert.match(prompt, /explanation \+ user approval required/i);
   assert.match(prompt, /context\.sync\(\)/i);
+});
+
+void test("system prompt documents bash sandbox workflows", () => {
+  const prompt = buildSystemPrompt();
+  assert.match(prompt, /\*\*bash\*\*/);
+  assert.match(prompt, /sandboxed in-memory VFS/i);
+  assert.match(prompt, /sheet-to-csv/i);
+  assert.match(prompt, /csv-to-sheet/i);
+  assert.match(prompt, /\/home\/user\/uploads\//);
+  assert.match(prompt, new RegExp(OFFICEJS_API_DOCS_PATH.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
 });
 
 void test("system prompt lists the skills tool", () => {

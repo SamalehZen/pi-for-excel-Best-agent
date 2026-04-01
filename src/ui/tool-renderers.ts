@@ -751,6 +751,13 @@ function describeToolCall(
       const range = p.range as string | undefined;
       return { action: "Screenshot", detail: range ?? "range" };
     }
+    case "bash": {
+      const command = p.command as string | undefined;
+      const preview = command
+        ? (command.length > 50 ? `${command.substring(0, 47)}...` : command)
+        : "command";
+      return { action: "Run bash", detail: preview };
+    }
     case "get_workbook_overview": {
       const sheet = p.sheet as string | undefined;
       return { action: "Overview", detail: sheet ?? "" };
