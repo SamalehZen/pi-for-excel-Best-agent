@@ -168,6 +168,7 @@ import {
 } from "./status-popovers.js";
 import { excelRun } from "../excel/helpers.js";
 import { TEMPLATE_CATALOG, findRecommendedTemplates } from "../template-gallery/template-catalog.js";
+import { BUNDLED_TEMPLATE_DEFINITIONS } from "../templates/definitions/index.js";
 import { showWelcomeLogin } from "./welcome-login.js";
 import {
   SessionRuntimeManager,
@@ -1962,6 +1963,12 @@ export async function initTaskpane(opts: {
 
   const openTemplatePicker = (anchor: Element): void => {
     const buildTemplateList = (recommendedIds: Set<string>): TemplatePopoverItem[] => {
+      const paletteMap = new Map<string, string[]>();
+      for (const def of BUNDLED_TEMPLATE_DEFINITIONS) {
+        const palette = def.design.palette;
+        paletteMap.set(def.id, [palette.titleBg, palette.headerBg, palette.accentBg, palette.labelBg]);
+      }
+
       const items: TemplatePopoverItem[] = TEMPLATE_CATALOG.map((t) => ({
         id: t.id,
         name: t.name,
@@ -1969,6 +1976,7 @@ export async function initTaskpane(opts: {
         previewUrl: t.previewUrl,
         primaryColor: t.primaryColor,
         isRecommended: recommendedIds.has(t.id),
+        paletteColors: paletteMap.get(t.id) ?? [t.primaryColor],
       }));
       items.sort((a, b) => {
         if (a.isRecommended && !b.isRecommended) return -1;

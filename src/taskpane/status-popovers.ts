@@ -262,12 +262,14 @@ export interface TemplatePopoverItem {
   id: string;
   name: string;
   category: string;
-  /** Preview thumbnail URL */
+  /** Preview thumbnail URL — no longer used for rendering, kept for backward compat */
   previewUrl: string;
-  /** Primary brand color for the color strip */
+  /** Primary brand color */
   primaryColor: string;
   /** Whether this template is recommended for the current sheet */
   isRecommended: boolean;
+  /** Palette colors for the swatch display [titleBg, headerBg, accentBg, labelBg] */
+  paletteColors: string[];
 }
 
 interface TemplatePopoverOptions {
@@ -363,37 +365,52 @@ function renderTemplateCards(
     button.type = "button";
     button.className = "pi-status-popover__item pi-template-card";
 
-    const img = document.createElement("img");
-    img.className = "pi-template-card__img";
-    img.src = template.previewUrl;
-    img.alt = template.name;
-    img.loading = "lazy";
+    const swatchBox = document.createElement("span");
+    swatchBox.className = "pi-template-card__swatch-box";
 
-    const colorStrip = document.createElement("span");
-    colorStrip.className = "pi-template-card__color-strip";
-    colorStrip.style.background = template.primaryColor;
+    const seen = new Set<string>();
+    const displayColors: string[] = [];
+    for (const color of template.paletteColors) {
+      if (!color || !color.trim()) continue;
+      const normalized = color.trim().toLowerCase();
+      if (seen.has(normalized)) continue;
+      seen.add(normalized);
+      displayColors.push(color);
+      if (displayColors.length >= 4) break;
+    }
+
+    if (displayColors.length < 2) {
+      swatchBox.classList.add("pi-template-card__swatch-box--single");
+    }
+
+    for (const color of displayColors) {
+      const dot = document.createElement("span");
+      dot.className = "pi-template-card__swatch-dot";
+      dot.style.backgroundColor = color;
+      swatchBox.appendChild(dot);
+    }
 
     const textWrap = document.createElement("span");
     textWrap.className = "pi-template-card__text";
 
-    const label = document.createElement("span");
-    label.className = "pi-status-popover__item-label";
-    label.textContent = template.name;
+    const nameRow = document.createElement("span");
+    nameRow.className = "pi-template-card__name";
+    nameRow.textContent = template.name;
+
+    const categoryRow = document.createElement("span");
+    categoryRow.className = "pi-template-card__category";
+    categoryRow.textContent = template.category;
+
+    textWrap.append(nameRow, categoryRow);
 
     if (template.isRecommended) {
       const badge = document.createElement("span");
       badge.className = "pi-template-card__badge";
       badge.textContent = "\u2B50 Recommended";
-      label.appendChild(document.createTextNode(" "));
-      label.appendChild(badge);
+      textWrap.appendChild(badge);
     }
 
-    const hint = document.createElement("span");
-    hint.className = "pi-status-popover__item-hint";
-    hint.textContent = template.category;
-
-    textWrap.append(label, hint);
-    button.append(img, colorStrip, textWrap);
+    button.append(swatchBox, textWrap);
 
     button.addEventListener("click", () => {
       showModeChoice(template.id, template.name, onSelect);
@@ -534,4 +551,3 @@ export function toggleTemplatePopover(opts: TemplatePopoverOptions): void {
     };
   }
 }
-
