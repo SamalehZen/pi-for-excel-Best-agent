@@ -27,6 +27,11 @@ void test("classifies explain_formula as read-only", () => {
   assert.equal(getToolContextImpact("explain_formula", { cell: "Sheet1!D10" }), "none");
 });
 
+void test("classifies screenshot_range as read-only", () => {
+  assert.equal(getToolExecutionMode("screenshot_range", { range: "Sheet1!A1:F20" }), "read");
+  assert.equal(getToolContextImpact("screenshot_range", { range: "Sheet1!A1:F20" }), "none");
+});
+
 void test("classifies modify_structure as structure-impact mutate", () => {
   assert.equal(getToolExecutionMode("modify_structure", { action: "add_sheet" }), "mutate");
   assert.equal(getToolContextImpact("modify_structure", { action: "add_sheet" }), "structure");

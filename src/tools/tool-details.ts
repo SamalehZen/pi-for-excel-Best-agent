@@ -211,6 +211,13 @@ export interface ReadRangeCsvDetails {
   csv: string;
 }
 
+export interface ScreenshotRangeDetails {
+  kind: "screenshot_range";
+  address?: string;
+  width?: number;
+  height?: number;
+}
+
 export type BridgeGateReason = "missing_bridge_url" | "invalid_bridge_url" | "bridge_unreachable";
 
 export interface TmuxBridgeDetails {
@@ -484,6 +491,7 @@ export type ExcelToolDetails =
   | TraceDependenciesDetails
   | ExplainFormulaDetails
   | ReadRangeCsvDetails
+  | ScreenshotRangeDetails
   | TmuxBridgeDetails
   | PythonBridgeDetails
   | LibreOfficeBridgeDetails
@@ -867,6 +875,12 @@ export function isReadRangeCsvDetails(value: unknown): value is ReadRangeCsvDeta
     Array.isArray(value.values) &&
     typeof value.csv === "string"
   );
+}
+
+export function isScreenshotRangeDetails(value: unknown): value is ScreenshotRangeDetails {
+  if (!isRecord(value)) return false;
+  if (value.kind !== "screenshot_range") return false;
+  return isOptionalString(value.address) && isOptionalNumber(value.width) && isOptionalNumber(value.height);
 }
 
 export function isTraceDependenciesDetails(value: unknown): value is TraceDependenciesDetails {
