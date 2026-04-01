@@ -9,6 +9,8 @@ export const CORE_TOOL_NAMES = [
   "create_chart",
   "create_table",
   "create_pivot_table",
+  "data_validation",
+  "range_operations",
   "format_cells",
   "conditional_format",
   "trace_dependencies",

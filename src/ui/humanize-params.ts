@@ -539,6 +539,36 @@ function humanizeCreatePivotTable(p: Record<string, unknown>): ParamItem[] {
   return items;
 }
 
+function humanizeDataValidation(p: Record<string, unknown>): ParamItem[] {
+  const items: ParamItem[] = [];
+
+  const action = str(p.action);
+  if (action) items.push({ label: "Action", value: action });
+
+  const range = str(p.range);
+  if (range) items.push({ label: "Range", value: range });
+
+  const type = str(p.type);
+  if (type) items.push({ label: "Type", value: type });
+
+  return items;
+}
+
+function humanizeRangeOperations(p: Record<string, unknown>): ParamItem[] {
+  const items: ParamItem[] = [];
+
+  const action = str(p.action);
+  if (action) items.push({ label: "Action", value: action });
+
+  const source = str(p.source_range) || str(p.range);
+  if (source) items.push({ label: "Range", value: source });
+
+  const target = str(p.target_range) || str(p.target_cell);
+  if (target) items.push({ label: "Target", value: target });
+
+  return items;
+}
+
 function humanizeTraceDependencies(p: Record<string, unknown>): ParamItem[] {
   const items: ParamItem[] = [];
 
@@ -1046,6 +1076,8 @@ const CORE_HUMANIZERS = {
   create_chart: humanizeCreateChart,
   create_table: humanizeCreateTable,
   create_pivot_table: humanizeCreatePivotTable,
+  data_validation: humanizeDataValidation,
+  range_operations: humanizeRangeOperations,
   conditional_format: humanizeConditionalFormat,
   trace_dependencies: humanizeTraceDependencies,
   explain_formula: humanizeExplainFormula,

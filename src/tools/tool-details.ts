@@ -84,6 +84,22 @@ export interface CreatePivotTableDetails {
   sourceAddress?: string;
 }
 
+export interface DataValidationDetails {
+  kind: "data_validation";
+  action: "get" | "set" | "clear";
+  range?: string;
+  sheetName?: string;
+  ruleCount?: number;
+}
+
+export interface RangeOperationsDetails {
+  kind: "range_operations";
+  action: string;
+  sourceRange?: string;
+  targetRange?: string;
+  sheetName?: string;
+}
+
 export interface ApplyTemplateListDetails {
   kind: "apply_template_list";
   count: number;
@@ -459,6 +475,8 @@ export type ExcelToolDetails =
   | CreateChartDetails
   | CreateTableDetails
   | CreatePivotTableDetails
+  | DataValidationDetails
+  | RangeOperationsDetails
   | ConditionalFormatDetails
   | ModifyStructureDetails
   | CommentsDetails
@@ -767,6 +785,30 @@ export function isCreatePivotTableDetails(value: unknown): value is CreatePivotT
     isOptionalString(value.pivotTableName) &&
     isOptionalString(value.sheetName) &&
     isOptionalString(value.sourceAddress)
+  );
+}
+
+export function isDataValidationDetails(value: unknown): value is DataValidationDetails {
+  if (!isRecord(value)) return false;
+  if (value.kind !== "data_validation") return false;
+
+  return (
+    (value.action === "get" || value.action === "set" || value.action === "clear") &&
+    isOptionalString(value.range) &&
+    isOptionalString(value.sheetName) &&
+    isOptionalNumber(value.ruleCount)
+  );
+}
+
+export function isRangeOperationsDetails(value: unknown): value is RangeOperationsDetails {
+  if (!isRecord(value)) return false;
+  if (value.kind !== "range_operations") return false;
+
+  return (
+    typeof value.action === "string" &&
+    isOptionalString(value.sourceRange) &&
+    isOptionalString(value.targetRange) &&
+    isOptionalString(value.sheetName)
   );
 }
 

@@ -76,6 +76,16 @@ const CORE_TOOL_CAPABILITY_METADATA = {
     category: "structure",
     promptDescription: "create pivot tables from data ranges with row/column/value/filter hierarchies and aggregation functions (sum, average, count, min, max)",
   },
+  data_validation: {
+    tier: "core",
+    category: "inspect",
+    promptDescription: "read, apply, or clear data validation rules (list, number, date, text length, custom formula)",
+  },
+  range_operations: {
+    tier: "core",
+    category: "write",
+    promptDescription: "copy, delete, merge/unmerge cell ranges within or across sheets",
+  },
   format_cells: {
     tier: "core",
     category: "format",
@@ -198,6 +208,8 @@ export const TOOL_DISCLOSURE_TRIGGER_PATTERNS = {
     /\bdependenc(y|ies)\b/,
     /\blineage\b/,
     /\bformula (audit|debug|explain)\b/,
+    /\bvalidat(e|ion)\b/,
+    /\bdropdown\b/,
   ],
   structure: [
     /\b(insert|delete|rename|move|shift)\b[^\n]{0,40}\b(row|rows|column|columns|sheet|sheets|tab|tabs)\b/,
@@ -214,6 +226,9 @@ export const TOOL_DISCLOSURE_TRIGGER_PATTERNS = {
     /\bgridlines?\b/,
     /\bheadings?\b/,
     /\btab color\b/,
+    /\bmerge\b/,
+    /\bunmerge\b/,
+    /\bcopy range\b/,
   ],
   formatting: [
     /\bformat(ting)?\b/,
@@ -312,6 +327,8 @@ export const TOOL_UI_METADATA = {
   create_chart: { renderer: true, humanizer: true },
   create_table: { renderer: true, humanizer: true },
   create_pivot_table: { renderer: true, humanizer: true },
+  data_validation: { renderer: true, humanizer: true },
+  range_operations: { renderer: true, humanizer: true },
   format_cells: { renderer: true, humanizer: true },
   conditional_format: { renderer: true, humanizer: true },
   trace_dependencies: { renderer: true, humanizer: true },

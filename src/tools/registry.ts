@@ -19,6 +19,8 @@ import { createModifyStructureTool } from "./modify-structure.js";
 import { createCreateChartTool } from "./create-chart.js";
 import { createCreateTableTool } from "./create-table.js";
 import { createCreatePivotTableTool } from "./create-pivot-table.js";
+import { createDataValidationTool } from "./data-validation.js";
+import { createRangeOperationsTool } from "./range-operations.js";
 import { createFormatCellsTool } from "./format-cells.js";
 import { createConditionalFormatTool } from "./conditional-format.js";
 import { createTraceDependenciesTool } from "./trace-dependencies.js";
@@ -57,6 +59,8 @@ export function createCoreTools(options: CreateCoreToolsOptions = {}): AnyCoreTo
     createCreateChartTool(),
     createCreateTableTool(),
     createCreatePivotTableTool(),
+    createDataValidationTool(),
+    createRangeOperationsTool(),
     createFormatCellsTool(),
     createConditionalFormatTool(),
     createTraceDependenciesTool(),
