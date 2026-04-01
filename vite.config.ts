@@ -56,6 +56,30 @@ function piAuthPlugin(): Plugin {
 }
 
 /**
+ * Stub node:zlib in browser builds.
+ *
+ * just-bash's browser bundle imports gzipSync / gunzipSync / constants from
+ * node:zlib for its gzip, gunzip, zcat, and rg commands.  Without this plugin
+ * the import is externalized by the `external: [/^node:/]` Rollup rule and
+ * the built bundle contains a bare `import … from "node:zlib"` that crashes
+ * the browser at load time, causing a blank white page.
+ */
+function stubNodeZlibPlugin(): Plugin {
+  const stubPath = path.resolve(__dirname, "src/stubs/node-zlib.ts");
+
+  return {
+    name: "stub-node-zlib",
+    enforce: "pre",
+    resolveId(id) {
+      if (id === "node:zlib") {
+        return stubPath;
+      }
+      return null;
+    },
+  };
+}
+
+/**
  * Stub out the Amazon Bedrock provider in browser builds.
  *
  * pi-ai registers all built-in providers at import time, including Bedrock.
@@ -258,6 +282,7 @@ const hasHttpsCerts = fs.existsSync(keyPath) && fs.existsSync(certPath);
 export default defineConfig({
   plugins: [
     piAuthPlugin(),
+    stubNodeZlibPlugin(),
     stubBedrockProviderPlugin(),
     stubPiAiOAuthIndexPlugin(),
     stubPiWebUiBuiltinToolsPlugin(),
@@ -330,11 +355,11 @@ export default defineConfig({
         "template-gallery": "src/template-gallery.html",
       },
       // Externalize node:* imports (Rollup can't bundle them for the browser).
-      // Note: do NOT externalize regular deps (e.g. @smithy/*). If they leak
-      // through as bare imports, the built add-in will fail to boot.
-      external: [
-        /^node:/,
-      ],
+      // Exception: node:zlib is stubbed via the stubNodeZlibPlugin so
+      // just-bash's browser bundle works without crashing at import time.
+      external(id) {
+        return /^node:/.test(id) && id !== "node:zlib";
+      },
     },
   },
 });
