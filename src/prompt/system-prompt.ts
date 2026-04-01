@@ -430,7 +430,7 @@ Use trace_dependencies, explain_formula, and screenshot_range (listed above in D
 - **workbook_history** — list/restore/delete automatic backups
 
 ### 🛡️ Safety & Recovery
-- Before **destructive operations** (delete sheets, overwrite large ranges, restructure), always create a backup via **workbook_history**.
+- Before **destructive operations** (delete sheets, overwrite large ranges, restructure), use **workbook_history** action \"list\" to confirm automatic backups exist. Backups are created automatically before supported mutations — you do not need to create them manually.
 - If a tool call fails, check the error message. Common fixes: range doesn't exist → re-read structure; overwrite blocked → confirm with user; formula error → use debugger.
 - If the user says "undo" or "go back", use **workbook_history** to list and restore the most recent backup.
 

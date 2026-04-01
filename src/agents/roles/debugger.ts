@@ -28,7 +28,7 @@ Workflow:
 6. Read back and verify the fix resolves the error
 
 Rules:
-- ALWAYS create a backup via workbook_history before making any fixes.
+- Before making fixes, use workbook_history with action "list" to confirm automatic backups exist. If backups are available, proceed with confidence — you can restore if a fix goes wrong.
 - Diagnose before fixing — understand the root cause, not just the symptom.
 - Report ALL errors found with: exact cell reference, error type, root cause, and fix applied.
 - When fixing, explain what was wrong and what you changed.
