@@ -406,7 +406,7 @@ Other tools may be available depending on enabled experiments/integrations.
 Use **files** for workspace artifacts (list/read/write/delete files). Pass \`path\` on \`list\` to scope to a folder.
 Built-in assistant docs are always available under \`assistant-docs/\` (for example \`assistant-docs/docs/extensions.md\`).
 Office.js runs inside Excel — there is no separate Office.js bridge for end users to install.
-For workbook features not covered by structured tools (for example Excel tables with filters, charts, and PivotTables), use **execute_office_js** instead of claiming setup is missing.
+For workbook features not covered by structured tools (for example data validation rules, sparklines, or named range management), use **execute_office_js** instead of claiming setup is missing.
 If **execute_office_js** is available, keep code minimal, call \`context.sync()\` after \`load()\`, and return JSON-serializable results.
 When a user selects a template from the gallery to apply to existing data, always use **delegate_task** with role **template-builder** instead of apply_template with design_only mode.`;
 

@@ -63,6 +63,27 @@ export interface FormatCellsDetails {
   recovery?: RecoveryCheckpointDetails;
 }
 
+export interface CreateChartDetails {
+  kind: "create_chart";
+  chartType?: string;
+  sheetName?: string;
+  chartName?: string;
+}
+
+export interface CreateTableDetails {
+  kind: "create_table";
+  tableName?: string;
+  sheetName?: string;
+  address?: string;
+}
+
+export interface CreatePivotTableDetails {
+  kind: "create_pivot_table";
+  pivotTableName?: string;
+  sheetName?: string;
+  sourceAddress?: string;
+}
+
 export interface ApplyTemplateListDetails {
   kind: "apply_template_list";
   count: number;
@@ -435,6 +456,9 @@ export type ExcelToolDetails =
   | WriteCellsDetails
   | FillFormulaDetails
   | FormatCellsDetails
+  | CreateChartDetails
+  | CreateTableDetails
+  | CreatePivotTableDetails
   | ConditionalFormatDetails
   | ModifyStructureDetails
   | CommentsDetails
@@ -710,6 +734,39 @@ export function isFormatCellsDetails(value: unknown): value is FormatCellsDetail
     isOptionalString(value.address) &&
     isOptionalNumber(value.warningsCount) &&
     isOptionalRecoveryCheckpointDetails(value.recovery)
+  );
+}
+
+export function isCreateChartDetails(value: unknown): value is CreateChartDetails {
+  if (!isRecord(value)) return false;
+  if (value.kind !== "create_chart") return false;
+
+  return (
+    isOptionalString(value.chartType) &&
+    isOptionalString(value.sheetName) &&
+    isOptionalString(value.chartName)
+  );
+}
+
+export function isCreateTableDetails(value: unknown): value is CreateTableDetails {
+  if (!isRecord(value)) return false;
+  if (value.kind !== "create_table") return false;
+
+  return (
+    isOptionalString(value.tableName) &&
+    isOptionalString(value.sheetName) &&
+    isOptionalString(value.address)
+  );
+}
+
+export function isCreatePivotTableDetails(value: unknown): value is CreatePivotTableDetails {
+  if (!isRecord(value)) return false;
+  if (value.kind !== "create_pivot_table") return false;
+
+  return (
+    isOptionalString(value.pivotTableName) &&
+    isOptionalString(value.sheetName) &&
+    isOptionalString(value.sourceAddress)
   );
 }
 

@@ -502,6 +502,43 @@ function humanizeConditionalFormat(p: Record<string, unknown>): ParamItem[] {
   return items;
 }
 
+function humanizeCreateChart(p: Record<string, unknown>): ParamItem[] {
+  const items: ParamItem[] = [];
+  const type = str(p.chart_type);
+  if (type) items.push({ label: "Type", value: type });
+  const range = str(p.data_range);
+  if (range) items.push({ label: "Data", value: range });
+  const target = str(p.target_cell);
+  if (target) items.push({ label: "Position", value: target });
+  const title = str(p.title);
+  if (title) items.push({ label: "Title", value: title });
+  return items;
+}
+
+function humanizeCreateTable(p: Record<string, unknown>): ParamItem[] {
+  const items: ParamItem[] = [];
+  const range = str(p.range);
+  if (range) items.push({ label: "Range", value: range });
+  const name = str(p.table_name);
+  if (name) items.push({ label: "Name", value: name });
+  const style = str(p.style);
+  if (style) items.push({ label: "Style", value: style });
+  return items;
+}
+
+function humanizeCreatePivotTable(p: Record<string, unknown>): ParamItem[] {
+  const items: ParamItem[] = [];
+  const source = str(p.source_range);
+  if (source) items.push({ label: "Source", value: source });
+  const target = str(p.target_cell);
+  if (target) items.push({ label: "Target", value: target });
+  const name = str(p.name);
+  if (name) items.push({ label: "Name", value: name });
+  const aggFunc = str(p.agg_func);
+  if (aggFunc) items.push({ label: "Aggregation", value: aggFunc });
+  return items;
+}
+
 function humanizeTraceDependencies(p: Record<string, unknown>): ParamItem[] {
   const items: ParamItem[] = [];
 
@@ -1006,6 +1043,9 @@ const CORE_HUMANIZERS = {
   fill_formula: humanizeFillFormula,
   search_workbook: humanizeSearchWorkbook,
   modify_structure: humanizeModifyStructure,
+  create_chart: humanizeCreateChart,
+  create_table: humanizeCreateTable,
+  create_pivot_table: humanizeCreatePivotTable,
   conditional_format: humanizeConditionalFormat,
   trace_dependencies: humanizeTraceDependencies,
   explain_formula: humanizeExplainFormula,

@@ -34,6 +34,9 @@ const ALWAYS_MUTATE_TOOLS = new Set<string>([
   "write_cells",
   "fill_formula",
   "modify_structure",
+  "create_chart",
+  "create_table",
+  "create_pivot_table",
   "format_cells",
   "conditional_format",
   // Bridge-assisted transform writes values back into the workbook.
@@ -127,6 +130,10 @@ export function getToolContextImpact(toolName: string, params: unknown): ToolCon
   }
 
   if (toolName === "view_settings" && isViewSettingsStructureAction(params)) {
+    return "structure";
+  }
+
+  if (toolName === "create_table" || toolName === "create_pivot_table") {
     return "structure";
   }
 

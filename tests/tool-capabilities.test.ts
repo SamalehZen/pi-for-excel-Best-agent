@@ -77,6 +77,9 @@ void test("disclosure bundles keep shared core safety tools and add category-spe
   assert.equal(TOOL_DISCLOSURE_BUNDLES.analysis.includes("explain_formula"), true);
   assert.equal(TOOL_DISCLOSURE_BUNDLES.formatting.includes("format_cells"), true);
   assert.equal(TOOL_DISCLOSURE_BUNDLES.formatting.includes("view_settings"), true);
+  assert.equal(TOOL_DISCLOSURE_BUNDLES.structure.includes("create_chart"), true);
+  assert.equal(TOOL_DISCLOSURE_BUNDLES.structure.includes("create_table"), true);
+  assert.equal(TOOL_DISCLOSURE_BUNDLES.structure.includes("create_pivot_table"), true);
   assert.equal(TOOL_DISCLOSURE_BUNDLES.structure.includes("modify_structure"), true);
   assert.equal(TOOL_DISCLOSURE_BUNDLES.comments.includes("comments"), true);
 });
