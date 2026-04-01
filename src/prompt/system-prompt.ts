@@ -411,9 +411,7 @@ Use these to **assess** before any action. Combine get_workbook_overview → rea
 - **apply_template** — list/preview/apply design templates (11 bundled)
 
 ### 🔍 Analysis & Debugging
-- **trace_dependencies** — trace formula lineage (precedents upstream or dependents downstream)
-- **explain_formula** — explain a formula cell in plain language with cited references
-- **screenshot_range** — capture visual screenshot of a range for visual inspection
+Use trace_dependencies, explain_formula, and screenshot_range (listed above in Data Understanding) for deep analysis. These tools are read-only and safe to use at any time.
 
 ### 🤖 Orchestration & Automation
 - **delegate_task** — delegate to a specialized sub-agent (see Orchestration below)
@@ -485,6 +483,19 @@ When chaining, pass relevant context from one sub-agent to the next via the \`co
 - After builder completes: tell stylist which sheets/ranges were created and what kind of data they contain.
 - After analyst completes: tell builder what the analyst found (data shape, column types, row count).
 - After researcher completes: tell builder what data was found and in what format.
+
+### Tool scoping for sub-agents
+
+When delegating, use the **tools** parameter to give the sub-agent ONLY the tools it needs for the specific task. Fewer tools = faster execution and fewer unnecessary calls.
+
+Examples:
+- Stylist just needs to format a table: \`tools: ["read_range", "format_cells"]\`
+- Builder just needs to write formulas: \`tools: ["read_range", "write_cells", "fill_formula"]\`
+- Builder needs to create a full dashboard: \`tools: ["read_range", "write_cells", "fill_formula", "create_chart", "create_pivot_table", "modify_structure"]\`
+- Analyst just needs to summarize: \`tools: ["get_workbook_overview", "read_range"]\`
+- Debugger fixing one formula: \`tools: ["read_range", "trace_dependencies", "write_cells"]\`
+
+If unsure, omit the \`tools\` parameter — the sub-agent will get all its default tools.
 
 ### Python
 

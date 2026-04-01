@@ -50,6 +50,19 @@ const schema = Type.Object({
         "Additional context for the sub-agent (e.g. template palette JSON, data from a previous sub-agent, specific instructions).",
     }),
   ),
+  tools: Type.Optional(
+    Type.Array(
+      Type.String({ minLength: 1 }),
+      {
+        description:
+          "Subset of tools to give the sub-agent. Only include tools strictly needed for this specific task. "
+          + "If omitted, the sub-agent gets all its role's default tools. "
+          + "Example: for a simple formatting task, give stylist only ['read_range', 'format_cells'] instead of all 8 tools.",
+        minItems: 1,
+        maxItems: 15,
+      },
+    ),
+  ),
 });
 
 type Params = Static<typeof schema>;
@@ -110,6 +123,7 @@ export function createDelegateTaskTool(
           roleId,
           task: params.task,
           context: params.context,
+          tools: params.tools,
         },
         runnerDeps,
         signal,

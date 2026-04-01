@@ -36,7 +36,12 @@ Rules:
 - Create pivot tables for data aggregation when source data is tabular.
 - Document sources for every hardcoded assumption via comments.
 - For complex Office.js operations (named ranges, advanced chart options), use execute_office_js.
-- Verify model integrity: read back key cells and check rows after building.`,
+- Verify model integrity: read back key cells and check rows after building.
+
+Efficiency:
+- Batch writes: headers + assumptions + first row of formulas in one write_cells call when possible.
+- Use fill_formula to extend formulas across all projection columns in one call.
+- Build the model top-to-bottom: assumptions → revenue → costs → summary. Don't jump between sections.`,
 
   allowedTools: [
     "get_workbook_overview",
@@ -60,6 +65,6 @@ Rules:
     recentChanges: true,
   },
 
-  maxTurns: 20,
+  maxTurns: 12,
   skillsToPreload: ["financial-modeling"],
 };

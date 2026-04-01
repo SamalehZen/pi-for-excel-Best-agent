@@ -95,6 +95,6 @@ Read back a sample of the formatted range to confirm formatting was applied corr
     recentChanges: false,
   },
 
-  maxTurns: 20,
+  maxTurns: 12,
   skillsToPreload: [],
 };
