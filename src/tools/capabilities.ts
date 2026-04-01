@@ -64,7 +64,7 @@ const CORE_TOOL_CAPABILITY_METADATA = {
   create_chart: {
     tier: "core",
     category: "write",
-    promptDescription: "create charts (line, bar, column, pie, scatter, area, doughnut, radar) from data ranges with axis labels, legends, and data labels",
+    promptDescription: "create, update, or delete charts (line, bar, column, pie, scatter, area, doughnut, radar) with axis labels, legends, and data labels",
   },
   create_table: {
     tier: "core",
@@ -74,7 +74,7 @@ const CORE_TOOL_CAPABILITY_METADATA = {
   create_pivot_table: {
     tier: "core",
     category: "structure",
-    promptDescription: "create pivot tables from data ranges with row/column/value/filter hierarchies and aggregation functions (sum, average, count, min, max)",
+    promptDescription: "create, update, or delete pivot tables with row/column/value/filter hierarchies and aggregation functions",
   },
   data_validation: {
     tier: "core",

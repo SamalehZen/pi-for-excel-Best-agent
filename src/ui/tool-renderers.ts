@@ -816,7 +816,11 @@ function describeToolCall(
       };
     }
     case "create_chart": {
+      const action = p.action as string | undefined ?? "create";
       const chartType = p.chart_type as string | undefined;
+      const chartName = p.chart_name as string | undefined;
+      if (action === "delete") return { action: "Delete chart", detail: chartName ?? "chart" };
+      if (action === "update") return { action: "Update chart", detail: chartName ?? "chart" };
       return { action: "Create chart", detail: chartType ?? "chart" };
     }
     case "create_table": {
@@ -824,7 +828,11 @@ function describeToolCall(
       return { action: "Create table", detail: tableRange ?? "range" };
     }
     case "create_pivot_table": {
+      const action = p.action as string | undefined ?? "create";
+      const pivotName = p.pivot_name as string | undefined;
       const source = p.source_range as string | undefined;
+      if (action === "delete") return { action: "Delete pivot", detail: pivotName ?? "pivot" };
+      if (action === "update") return { action: "Update pivot", detail: pivotName ?? "pivot" };
       return { action: "Create pivot table", detail: source ?? "data" };
     }
     case "data_validation": {
