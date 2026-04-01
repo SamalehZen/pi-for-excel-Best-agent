@@ -65,6 +65,7 @@ export interface FormatCellsDetails {
 
 export interface CreateChartDetails {
   kind: "create_chart";
+  action?: "create" | "update" | "delete";
   chartType?: string;
   sheetName?: string;
   chartName?: string;
@@ -79,6 +80,7 @@ export interface CreateTableDetails {
 
 export interface CreatePivotTableDetails {
   kind: "create_pivot_table";
+  action?: "create" | "update" | "delete";
   pivotTableName?: string;
   sheetName?: string;
   sourceAddress?: string;
@@ -768,6 +770,7 @@ export function isCreateChartDetails(value: unknown): value is CreateChartDetail
   if (value.kind !== "create_chart") return false;
 
   return (
+    (value.action === undefined || value.action === "create" || value.action === "update" || value.action === "delete") &&
     isOptionalString(value.chartType) &&
     isOptionalString(value.sheetName) &&
     isOptionalString(value.chartName)
@@ -790,6 +793,7 @@ export function isCreatePivotTableDetails(value: unknown): value is CreatePivotT
   if (value.kind !== "create_pivot_table") return false;
 
   return (
+    (value.action === undefined || value.action === "create" || value.action === "update" || value.action === "delete") &&
     isOptionalString(value.pivotTableName) &&
     isOptionalString(value.sheetName) &&
     isOptionalString(value.sourceAddress)

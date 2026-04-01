@@ -516,6 +516,10 @@ function humanizeConditionalFormat(p: Record<string, unknown>): ParamItem[] {
 
 function humanizeCreateChart(p: Record<string, unknown>): ParamItem[] {
   const items: ParamItem[] = [];
+  const action = str(p.action) || "create";
+  items.push({ label: "Action", value: action });
+  const chartName = str(p.chart_name);
+  if (chartName) items.push({ label: "Chart", value: chartName });
   const type = str(p.chart_type);
   if (type) items.push({ label: "Type", value: type });
   const range = str(p.data_range);
@@ -540,12 +544,20 @@ function humanizeCreateTable(p: Record<string, unknown>): ParamItem[] {
 
 function humanizeCreatePivotTable(p: Record<string, unknown>): ParamItem[] {
   const items: ParamItem[] = [];
+  const action = str(p.action) || "create";
+  items.push({ label: "Action", value: action });
+  const pivotName = str(p.pivot_name);
+  if (pivotName) items.push({ label: "Pivot", value: pivotName });
   const source = str(p.source_range);
   if (source) items.push({ label: "Source", value: source });
   const target = str(p.target_cell);
   if (target) items.push({ label: "Target", value: target });
   const name = str(p.name);
   if (name) items.push({ label: "Name", value: name });
+  if (Array.isArray(p.rows)) items.push({ label: "Rows", value: p.rows.length > 0 ? p.rows.map(str).join(", ") : "(cleared)" });
+  if (Array.isArray(p.columns)) items.push({ label: "Columns", value: p.columns.length > 0 ? p.columns.map(str).join(", ") : "(cleared)" });
+  if (Array.isArray(p.values)) items.push({ label: "Values", value: p.values.length > 0 ? p.values.map(str).join(", ") : "(cleared)" });
+  if (Array.isArray(p.filters)) items.push({ label: "Filters", value: p.filters.length > 0 ? p.filters.map(str).join(", ") : "(cleared)" });
   const aggFunc = str(p.agg_func);
   if (aggFunc) items.push({ label: "Aggregation", value: aggFunc });
   return items;
