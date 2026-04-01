@@ -37,6 +37,7 @@ const ALWAYS_MUTATE_TOOLS = new Set<string>([
   "create_chart",
   "create_table",
   "create_pivot_table",
+  "range_operations",
   "format_cells",
   "conditional_format",
   // Bridge-assisted transform writes values back into the workbook.
@@ -99,6 +100,11 @@ export function getToolExecutionMode(toolName: string, params: unknown): ToolExe
     return classifyComments(params);
   }
 
+  if (toolName === "data_validation") {
+    const action = getActionParam(params);
+    return action === "get" ? "read" : "mutate";
+  }
+
   if (toolName === "workbook_history") {
     return classifyWorkbookHistory(params);
   }
@@ -135,6 +141,12 @@ export function getToolContextImpact(toolName: string, params: unknown): ToolCon
 
   if (toolName === "create_table" || toolName === "create_pivot_table") {
     return "structure";
+  }
+
+  if (toolName === "range_operations") {
+    const action = getActionParam(params);
+    if (action === "delete" || action === "merge" || action === "unmerge") return "structure";
+    return "content";
   }
 
   return "content";

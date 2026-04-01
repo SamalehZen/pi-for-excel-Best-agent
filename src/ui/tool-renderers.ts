@@ -823,6 +823,22 @@ function describeToolCall(
       const source = p.source_range as string | undefined;
       return { action: "Create pivot table", detail: source ?? "data" };
     }
+    case "data_validation": {
+      const action = p.action as string | undefined;
+      const validationRange = p.range as string | undefined;
+      if (action === "get") return { action: "Get validation", detail: validationRange ?? "range" };
+      if (action === "clear") return { action: "Clear validation", detail: validationRange ?? "range" };
+      return { action: "Set validation", detail: validationRange ?? "range" };
+    }
+    case "range_operations": {
+      const action = p.action as string | undefined;
+      const operationRange = (p.source_range as string | undefined) ?? (p.range as string | undefined);
+      if (action === "copy") return { action: "Copy range", detail: operationRange ?? "range" };
+      if (action === "delete") return { action: "Delete range", detail: operationRange ?? "range" };
+      if (action === "merge") return { action: "Merge cells", detail: operationRange ?? "range" };
+      if (action === "unmerge") return { action: "Unmerge cells", detail: operationRange ?? "range" };
+      return { action: "Range operation", detail: action ?? "action" };
+    }
     case "conditional_format": {
       const recovery = recoveryBadgeForDetails(details);
       return {
