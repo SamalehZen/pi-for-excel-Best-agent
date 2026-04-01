@@ -13,6 +13,7 @@ void test("isAllowedMarkdownUrl blocks unsafe protocols", () => {
   assert.equal(isAllowedMarkdownUrl("http://example.com"), true);
   assert.equal(isAllowedMarkdownUrl("mailto:test@example.com"), true);
   assert.equal(isAllowedMarkdownUrl("tel:+12025550123"), true);
+  assert.equal(isAllowedMarkdownUrl("#cite:Sheet1!A1:B10"), true);
 
   assert.equal(isAllowedMarkdownUrl("javascript:alert(1)"), false);
   assert.equal(isAllowedMarkdownUrl("data:text/html,<h1>x</h1>"), false);

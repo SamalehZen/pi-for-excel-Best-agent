@@ -325,6 +325,7 @@ export function buildSystemPrompt(opts: SystemPromptOptions = {}): string {
   }
 
   sections.push(TOOLS);
+  sections.push(CITATIONS);
   sections.push(WORKSPACE);
   sections.push(WORKFLOW);
   sections.push(CONVENTIONS);
@@ -422,6 +423,16 @@ Office.js runs inside Excel — there is no separate Office.js bridge for end us
 For workbook features not covered by structured tools (for example data validation rules, sparklines, or named range management), use **execute_office_js** instead of claiming setup is missing.
 If **execute_office_js** is available, keep code minimal, call \`context.sync()\` after \`load()\`, and return JSON-serializable results.
 When a user selects a template from the gallery to apply to existing data, always use **delegate_task** with role **template-builder** instead of apply_template with design_only mode.`;
+
+const CITATIONS = `## Citations
+
+Use markdown links with #cite: hash to reference sheets and cells. Clicking navigates the user there.
+
+- Sheet only: [Sheet Name](#cite:SheetName)
+
+- Cell/range: [A1:B10](#cite:SheetName!A1:B10)
+
+Example: [Exchange Rates](#cite:Sheet2) or [see cell B5](#cite:Sheet1!B5)`;
 
 const WORKSPACE = `## Workspace
 
