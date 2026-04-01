@@ -22,6 +22,7 @@ export const CORE_TOOL_NAMES = [
   "apply_template",
   "workbook_history",
   "skills",
+  "screenshot_range",
 ] as const;
 
 export type CoreToolName = (typeof CORE_TOOL_NAMES)[number];

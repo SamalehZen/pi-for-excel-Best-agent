@@ -141,6 +141,11 @@ const CORE_TOOL_CAPABILITY_METADATA = {
     category: "skills",
     promptDescription: "list/read Agent Skills and install/uninstall external SKILL.md skills",
   },
+  screenshot_range: {
+    tier: "core",
+    category: "read",
+    promptDescription: "capture a visual screenshot of a cell range as an image with row/column headers for visual inspection of formatting, charts, and layout",
+  },
 } satisfies Record<CoreToolName, CoreToolCapabilityMetadata>;
 
 export const CORE_TOOL_CAPABILITIES: readonly CoreToolCapability[] = CORE_TOOL_NAMES.map((name) => ({
@@ -210,6 +215,11 @@ export const TOOL_DISCLOSURE_TRIGGER_PATTERNS = {
     /\bformula (audit|debug|explain)\b/,
     /\bvalidat(e|ion)\b/,
     /\bdropdown\b/,
+    /\bscreenshot\b/,
+    /\bcapture\b/,
+    /\bvisual(ly)?\b/,
+    /\bimage of\b/,
+    /\bshow me\b/,
   ],
   structure: [
     /\b(insert|delete|rename|move|shift)\b[^\n]{0,40}\b(row|rows|column|columns|sheet|sheets|tab|tabs)\b/,
@@ -340,6 +350,7 @@ export const TOOL_UI_METADATA = {
   apply_template: { renderer: true, humanizer: true },
   workbook_history: { renderer: true, humanizer: true },
   skills: { renderer: true, humanizer: true },
+  screenshot_range: { renderer: true, humanizer: true },
   web_search: { renderer: true, humanizer: true },
   fetch_page: { renderer: true, humanizer: true },
   mcp: { renderer: true, humanizer: true },

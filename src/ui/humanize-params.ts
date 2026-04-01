@@ -338,6 +338,18 @@ function humanizeReadRange(p: Record<string, unknown>): ParamItem[] {
   return items;
 }
 
+function humanizeScreenshotRange(p: Record<string, unknown>): ParamItem[] {
+  const items: ParamItem[] = [];
+
+  const range = str(p.range);
+  if (range) items.push({ label: "Range", value: range });
+
+  const explanation = str(p.explanation);
+  if (explanation) items.push({ label: "Inspecting", value: explanation });
+
+  return items;
+}
+
 function humanizeFillFormula(p: Record<string, unknown>): ParamItem[] {
   const items: ParamItem[] = [];
 
@@ -1089,6 +1101,7 @@ const CORE_HUMANIZERS = {
   apply_template: humanizeApplyTemplate,
   workbook_history: humanizeWorkbookHistory,
   skills: humanizeSkills,
+  screenshot_range: humanizeScreenshotRange,
 } satisfies Record<CoreToolName, HumanizerFn>;
 
 const EXTRA_HUMANIZERS = {

@@ -28,6 +28,7 @@ const ALWAYS_READ_TOOLS = new Set<string>([
   "files",
   // Extension registry operations mutate local settings/runtime, not workbook content.
   "extensions_manager",
+  "screenshot_range",
 ]);
 
 const ALWAYS_MUTATE_TOOLS = new Set<string>([

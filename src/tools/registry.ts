@@ -35,6 +35,7 @@ import {
   createSkillsTool,
   type SkillsToolDependencies,
 } from "./skills.js";
+import { createScreenshotRangeTool } from "./screenshot-range.js";
 
 export { CORE_TOOL_NAMES } from "./names.js";
 export type { CoreToolName } from "./names.js";
@@ -72,5 +73,6 @@ export function createCoreTools(options: CreateCoreToolsOptions = {}): AnyCoreTo
     createApplyTemplateTool(),
     createWorkbookHistoryTool(),
     createSkillsTool(options.skills),
+    createScreenshotRangeTool(),
   ] as unknown as AnyCoreTool[];
 }

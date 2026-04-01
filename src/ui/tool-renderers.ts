@@ -747,6 +747,10 @@ function describeToolCall(
       const label = mode === "csv" ? "Export" : "Read";
       return { action: label, detail: range ? compactRange(range) + (mode === "csv" ? " (CSV)" : "") : "range", address: range };
     }
+    case "screenshot_range": {
+      const range = p.range as string | undefined;
+      return { action: "Screenshot", detail: range ?? "range" };
+    }
     case "get_workbook_overview": {
       const sheet = p.sheet as string | undefined;
       return { action: "Overview", detail: sheet ?? "" };
