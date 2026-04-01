@@ -34,15 +34,7 @@ dist/
 # Session exports
 pi-session-*
 .vercel/output/
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
+
 # Environment files
 *.env
 *.env.*
