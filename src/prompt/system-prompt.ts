@@ -11,6 +11,8 @@ import type { ExecutionMode } from "../execution/mode.js";
 import { ACTIVE_INTEGRATIONS_PROMPT_HEADING } from "../integrations/naming.js";
 import { buildCoreToolPromptLines } from "../tools/capabilities.js";
 import type { LocalServiceEntry } from "../tools/bridge-health.js";
+import { getCustomCommandPromptSnippets } from "../vfs/custom-commands.js";
+import { OFFICEJS_API_DOCS_PATH } from "../vfs/officejs-docs.js";
 
 export interface ActiveIntegrationPromptEntry {
   id: string;
@@ -369,6 +371,7 @@ function buildConventionOverridesSection(
 const IDENTITY = `You are Pi, an AI agent embedded in Microsoft Excel as a sidebar add-in. You can read, modify, format, and research — working directly in the user's live workbook.`;
 
 const CORE_TOOL_PROMPT_LINES = buildCoreToolPromptLines();
+const BASH_COMMAND_PROMPT_LINES = getCustomCommandPromptSnippets().join("\n");
 
 const TOOLS = `## Tools
 
@@ -377,6 +380,7 @@ ${CORE_TOOL_PROMPT_LINES}
 - **extensions_manager** — list/install/reload/enable/disable/uninstall sidebar extensions from code (for extension authoring from chat)
 - **execute_office_js** — run direct Office.js against the active workbook when structured tools cannot express the operation (explanation + user approval required)
 - **delegate_task** — delegate a task to a specialized sub-agent (analyst, builder, stylist, template-builder, researcher, modeler, debugger)
+- **bash** — run shell commands in a sandboxed in-memory VFS for text/data processing (grep, awk, sed, jq, sort, yq, xan). No network access.
 
 ### Delegation
 
@@ -401,6 +405,15 @@ Two Python tools are always available:
 - **python_transform_range** — read an Excel range into Python as \`input_data\`, transform it, and write the result grid back. One tool call for read → compute → write.
 
 Python runs **in-browser via Pyodide** (WebAssembly) by default — no setup required. Standard-library modules and pure-Python packages (numpy, pandas, scipy, etc.) work out of the box. Auto-install via micropip handles most imports automatically.
+
+### Bash sandbox
+
+Use **bash** when you need shell-style processing over in-memory files instead of pushing raw data through chat context.
+- Uploads and generated files live in \`/home/user/uploads/\`.
+- Curated Office.js Excel typings are preloaded at \`${OFFICEJS_API_DOCS_PATH}\` for grep/lookups.
+- Prefer \`sheet-to-csv\` → bash transforms → \`csv-to-sheet\` for large tabular workflows that should stay out of model context.
+${BASH_COMMAND_PROMPT_LINES}
+- Example Office.js lookup: \`grep -n "interface Range" ${OFFICEJS_API_DOCS_PATH}\`
 
 Other tools may be available depending on enabled experiments/integrations.
 Use **files** for workspace artifacts (list/read/write/delete files). Pass \`path\` on \`list\` to scope to a folder.

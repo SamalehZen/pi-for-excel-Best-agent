@@ -109,6 +109,30 @@ void test("applies tail truncation for log-style tools", async () => {
   assert.equal(truncation.truncatedBy, "lines");
 });
 
+void test("applies tail truncation for bash sandbox tool", async () => {
+  const tool = createTextTool({
+    name: "bash",
+    text: makeLinePayload(2_100),
+  });
+
+  const wrapped = applyToolOutputTruncation([tool], {
+    limits: {
+      maxLines: DEFAULT_TOOL_OUTPUT_MAX_LINES,
+      maxBytes: 500_000,
+    },
+  });
+
+  const result = await wrapped[0].execute("call-bash", {});
+  const text = result.content.find((block) => block.type === "text");
+  assert.ok(text);
+  assert.match(text.text, /line-2100/);
+  assert.doesNotMatch(text.text, /line-0001/);
+
+  const truncation = getToolOutputTruncationDetails(result.details);
+  assert.ok(truncation);
+  assert.equal(truncation.strategy, "tail");
+});
+
 void test("stores full output path metadata when persistence callback succeeds", async () => {
   const fullText = "x".repeat(DEFAULT_TOOL_OUTPUT_MAX_BYTES + 1_000);
   const stored: ToolOutputTruncationStoreArgs[] = [];

@@ -123,6 +123,9 @@ void test("classifies bridge and external tools as read-only non-workbook traffi
   assert.equal(getToolExecutionMode("mcp", { server: "local" }), "read");
   assert.equal(getToolContextImpact("mcp", { server: "local" }), "none");
 
+  assert.equal(getToolExecutionMode("bash", { command: "ls" }), "read");
+  assert.equal(getToolContextImpact("bash", { command: "ls" }), "none");
+
   assert.equal(getToolExecutionMode("files", { action: "list" }), "read");
   assert.equal(getToolContextImpact("files", { action: "list" }), "none");
 

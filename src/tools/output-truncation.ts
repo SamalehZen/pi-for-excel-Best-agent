@@ -22,6 +22,7 @@ const TAIL_TRUNCATION_TOOL_NAMES = new Set<string>([
   "tmux",
   "mcp",
   "execute_office_js",
+  "bash",
 ]);
 
 export interface ToolOutputTruncationLimits {

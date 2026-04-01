@@ -311,6 +311,7 @@ export const AUXILIARY_UI_TOOL_NAMES = [
   "python_transform_range",
   "execute_office_js",
   "delegate_task",
+  "bash",
 ] as const;
 
 export type AuxiliaryUiToolName = (typeof AUXILIARY_UI_TOOL_NAMES)[number];
@@ -358,6 +359,7 @@ export const TOOL_UI_METADATA = {
   python_transform_range: { renderer: true, humanizer: true },
   execute_office_js: { renderer: true, humanizer: true },
   delegate_task: { renderer: true, humanizer: true },
+  bash: { renderer: true, humanizer: true },
 } as const satisfies Record<UiToolName, ToolUiMetadata>;
 
 export const TOOL_NAMES_WITH_RENDERER: readonly UiToolName[] = UI_TOOL_NAMES
