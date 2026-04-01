@@ -854,7 +854,7 @@ export async function initTaskpane(opts: {
           getStreamFn: () => streamFn,
           getModel: () => runtimeAgent?.state.model ?? defaultModel,
           getAllTools: () => runtimeAgent?.state.tools ?? [],
-          getApiKey: runtimeAgent?.getApiKey,
+          getApiKey: (provider: string) => runtimeAgent?.getApiKey?.(provider),
           getWorkbookContext: () => undefined,
         },
       }).filter(isRuntimeAgentTool);
