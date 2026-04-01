@@ -33,6 +33,8 @@ export interface SubAgentRequest {
   task: string;
   context?: string;
   maxTurns?: number;
+  /** Optional subset of tools to give the sub-agent. If omitted, uses the role's full allowedTools. */
+  tools?: string[];
 }
 
 export type SubAgentStatus = "completed" | "failed" | "max_turns_reached";

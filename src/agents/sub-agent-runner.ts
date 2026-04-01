@@ -31,8 +31,8 @@ import type {
 import { getRole } from "./roles.js";
 import { getErrorMessage } from "../utils/errors.js";
 
-const DEFAULT_MAX_TURNS = 15;
-const ABSOLUTE_MAX_TURNS = 30;
+const DEFAULT_MAX_TURNS = 10;
+const ABSOLUTE_MAX_TURNS = 15;
 
 export interface SubAgentRunnerDependencies {
   streamFn: StreamFn;
@@ -70,13 +70,19 @@ function buildSubAgentSystemPrompt(
   }
 
   if (workbookContext && role.requiredContext.workbookBlueprint) {
-    sections.push(`## Workbook Context\n\n${workbookContext}`);
+    sections.push(`## Workbook Context (already loaded — do NOT call get_workbook_overview)\n\n${workbookContext}`);
   }
 
   sections.push(
     `## Constraints\n\n`
-    + `- Complete the task efficiently. You have a maximum of ${role.maxTurns} turns.\n`
-    + `- When done, provide a brief summary of what you accomplished.\n`
+    + `- **CRITICAL: Minimum tool calls.** Having a tool available does NOT mean you should use it. Only call tools that are strictly necessary to complete the task. If you can finish in 3 calls, do NOT make 8.\n`
+    + `- **Plan before acting.** Before your first tool call, mentally plan the minimum sequence of calls needed. State your plan in 1-2 lines, then execute.\n`
+    + `- **Batch operations**: combine multiple writes/formats into single tool calls. One write_cells with 20 cells beats 20 separate calls.\n`
+    + `- **Read once**: if the workbook blueprint is in context, do NOT call get_workbook_overview again. Read target ranges once, then work from memory.\n`
+    + `- **No unnecessary verification**: do NOT re-read cells just to confirm a write succeeded — write_cells auto-verifies. Only re-read if you need the value for a subsequent formula.\n`
+    + `- **Stop immediately** when the task is complete. Do not use remaining turns.\n`
+    + `- You have a maximum of ${role.maxTurns} turns — but fewer is better. Target: complete in ${Math.ceil(role.maxTurns * 0.5)} turns or less.\n`
+    + `- When done, provide a brief summary of what you accomplished with cell references.\n`
     + `- If you encounter an error you cannot resolve, stop and report it.\n`
     + `- Do not ask the user questions — you are a background worker. Make reasonable decisions.`,
   );
@@ -115,13 +121,17 @@ export async function runSubAgent(
     ABSOLUTE_MAX_TURNS,
   );
 
-  const tools = filterToolsForRole(deps.allTools, role.allowedTools);
+  const toolAllowList = request.tools && request.tools.length > 0
+    ? request.tools.filter((t) => role.allowedTools.includes(t))
+    : [...role.allowedTools];
+
+  const tools = filterToolsForRole(deps.allTools, toolAllowList);
   if (tools.length === 0) {
     return {
       roleId: role.id,
       roleName: role.name,
       status: "failed",
-      summary: `No tools available for role "${role.name}". Required: ${role.allowedTools.join(", ")}`,
+      summary: `No tools available for role "${role.name}". Required: ${(request.tools ?? role.allowedTools).join(", ")}`,
       toolCallCount: 0,
       turnsUsed: 0,
       errors: ["No matching tools found in the current tool set"],

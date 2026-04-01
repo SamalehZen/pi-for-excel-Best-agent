@@ -32,7 +32,12 @@ Rules:
 - Right-align headers above number columns.
 - Financial data: blue (#0000FF) font for inputs, black for formulas, green (#008000) for cross-sheet links.
 - Group adjacent format_cells calls by format type to minimize tool calls.
-- After formatting, use screenshot_range to visually confirm the result.`,
+- After formatting, use screenshot_range to visually confirm the result.
+
+Efficiency:
+- Batch formatting: apply the same style to an entire range in one call, not cell by cell.
+- Format in order: base font → headers → data → totals → conditional. Maximum 4-5 format_cells calls for a typical sheet.
+- If the range is small (<50 rows), skip screenshot verification — trust the tool output.`,
 
   allowedTools: [
     "get_workbook_overview",
@@ -51,6 +56,6 @@ Rules:
     recentChanges: false,
   },
 
-  maxTurns: 12,
+  maxTurns: 7,
   skillsToPreload: [],
 };

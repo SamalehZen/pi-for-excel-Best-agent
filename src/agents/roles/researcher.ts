@@ -50,6 +50,6 @@ Rules:
     recentChanges: false,
   },
 
-  maxTurns: 10,
+  maxTurns: 6,
   skillsToPreload: [],
 };

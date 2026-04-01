@@ -31,7 +31,12 @@ Rules:
 - Use create_chart for charts, create_table for Excel tables, create_pivot_table for pivots — these are your primary tools.
 - Use execute_office_js only for operations not covered by structured tools (sparklines, named ranges, advanced chart options).
 - Reference cells by address in summaries with citations: [B3](#cite:Sheet1!B3).
-- For complex multi-sheet models, build one sheet at a time and verify before moving to the next.`,
+- For complex multi-sheet models, build one sheet at a time and verify before moving to the next.
+
+Efficiency:
+- Batch writes: one write_cells call with 50 cells beats 50 separate calls.
+- Use fill_formula to fill across columns instead of writing each cell.
+- Read once at the start, then work from memory. Only re-read to verify critical formulas.`,
 
   allowedTools: [
     "get_workbook_overview",
@@ -54,6 +59,6 @@ Rules:
     recentChanges: true,
   },
 
-  maxTurns: 15,
+  maxTurns: 10,
   skillsToPreload: ["power-user-patterns"],
 };
