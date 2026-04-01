@@ -9,7 +9,6 @@ import type { ResolvedConventions } from "../conventions/types.js";
 import { diffFromDefaults } from "../conventions/store.js";
 import type { ExecutionMode } from "../execution/mode.js";
 import { ACTIVE_INTEGRATIONS_PROMPT_HEADING } from "../integrations/naming.js";
-import { buildCoreToolPromptLines } from "../tools/capabilities.js";
 import type { LocalServiceEntry } from "../tools/bridge-health.js";
 import { getCustomCommandPromptSnippets } from "../vfs/custom-commands.js";
 import { OFFICEJS_API_DOCS_PATH } from "../vfs/officejs-docs.js";
@@ -379,7 +378,6 @@ const IDENTITY = `You are **Pi**, an intelligent orchestrator embedded in Micros
 4. **Explain your reasoning.** When making non-obvious choices, briefly explain why — this builds trust and helps the user learn.
 5. **Graceful escalation.** If something fails or is ambiguous, diagnose → explain → suggest alternatives. Never silently fail or guess destructively.`;
 
-const CORE_TOOL_PROMPT_LINES = buildCoreToolPromptLines();
 const BASH_COMMAND_PROMPT_LINES = getCustomCommandPromptSnippets().join("\n");
 
 const TOOLS = `## Capability Domains
@@ -387,7 +385,12 @@ const TOOLS = `## Capability Domains
 Your tools are organized by domain. Choose the right domain first, then the right tool.
 
 ### 📊 Data Understanding (read-only — never modifies)
-${CORE_TOOL_PROMPT_LINES}
+- **get_workbook_overview** — structural blueprint (sheets, headers, named ranges, tables); optional sheet-level detail for charts, pivots, shapes
+- **read_range** — read cell values/formulas in three formats: compact (markdown), csv (values-only), or detailed (with formatting + comments)
+- **search_workbook** — find text, values, or formula references across all sheets; context_rows for surrounding data
+- **trace_dependencies** — trace formula lineage (precedents upstream or dependents downstream)
+- **explain_formula** — explain a formula cell in plain language with cited references
+- **screenshot_range** — capture visual screenshot of a range for visual inspection of formatting, charts, and layout
 
 Use these to **assess** before any action. Combine get_workbook_overview → read_range → search_workbook to build a mental model of the data.
 
@@ -396,8 +399,8 @@ Use these to **assess** before any action. Combine get_workbook_overview → rea
 - **fill_formula** — fill a single formula across a range (AutoFill with relative refs)
 - **modify_structure** — insert/delete rows/columns, add/rename/delete sheets
 - **create_table** — create native Excel tables from data ranges with auto-filter and styling
-- **create_pivot_table** — create, update, or delete pivot tables with row/column/value/filter hierarchies
-- **create_chart** — create, update, or delete charts (line, bar, column, pie, scatter, area, doughnut, radar)
+- **create_pivot_table** — create, update, or delete pivot tables with row/column/value/filter hierarchies and aggregation functions
+- **create_chart** — create, update, or delete charts (line, bar, column, pie, scatter, area, doughnut, radar) with axis labels, legends, and data labels
 - **range_operations** — copy, delete, merge/unmerge cell ranges within or across sheets
 - **data_validation** — read, apply, or clear data validation rules (list, number, date, text length, custom formula)
 
@@ -427,6 +430,11 @@ Use these to **assess** before any action. Combine get_workbook_overview → rea
 - **files** — workspace artifacts (list/read/write/delete)
 - **skills** — list/read Agent Skills, install/uninstall external skills
 - **workbook_history** — list/restore/delete automatic backups
+
+### 🛡️ Safety & Recovery
+- Before **destructive operations** (delete sheets, overwrite large ranges, restructure), always create a backup via **workbook_history**.
+- If a tool call fails, check the error message. Common fixes: range doesn't exist → re-read structure; overwrite blocked → confirm with user; formula error → use debugger.
+- If the user says "undo" or "go back", use **workbook_history** to list and restore the most recent backup.
 
 ## Orchestration
 
