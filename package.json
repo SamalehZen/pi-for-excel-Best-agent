@@ -33,6 +33,7 @@
     "prepare": "node scripts/install-githooks.mjs"
   },
   "dependencies": {
+    "@mariozechner/mini-lit": "^0.2.1",
     "@anthropic-ai/sdk": "^0.78.0",
     "@mariozechner/pi-agent-core": "^0.58.1",
     "@mariozechner/pi-ai": "^0.58.1",
