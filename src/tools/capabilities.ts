@@ -196,6 +196,21 @@ export const TOOL_DISCLOSURE_FULL_ACCESS_PATTERNS: readonly RegExp[] = [
   /\bfull tool(set)?\b/,
   /\bfull access\b/,
   /\buse whatever tools?\b/,
+  /\bdashboard\b/,
+  /\breport\b/i,
+  /\bmodel\b.*\b(financial|business|forecast)\b/i,
+  /\b(financial|business|forecast)\b.*\bmodel\b/i,
+  /\banalyz(e|is)\b.*\b(and|then|&|,|\+)\b.*\b(format|build|create|chart|graph)\b/i,
+  /\b(build|create|make)\b.*\b(and|then|&|,|\+)\b.*\b(format|style|design)\b/i,
+  /\bclean(\s+up)?\b.*\b(and|then|&|,|\+)\b.*\b(format|organize|structure)\b/i,
+  /\bfrom scratch\b/,
+  /\bcomplete\b.*\b(analysis|review|audit|overhaul)\b/i,
+  /\b(refactor|restructure|reorganize|overhaul)\b.*\b(workbook|spreadsheet|file)\b/i,
+  /\bfix\s+(everything|all|the\s+whole)\b/i,
+  /\btemplate\b.*\bapply\b/i,
+  /\bapply\b.*\btemplate\b/i,
+  /\bdelegate\b/i,
+  /\bsub-?agent\b/i,
 ];
 
 export const TOOL_DISCLOSURE_TRIGGER_PATTERNS = {
@@ -284,11 +299,20 @@ export function chooseToolDisclosureBundle(prompt: string): ActiveToolDisclosure
     }
   }
 
-  // Mixed-intent requests (e.g. "insert a row and highlight it") need tools
-  // across categories. Fall back to full for the first call so continuation
-  // stripping doesn't block capabilities in the same turn.
   if (matchedBundles.length > 1) return "full";
   if (matchedBundles.length === 1) return matchedBundles[0];
+
+  const complexitySignals = [
+    /\b(step\s*1|first|then|next|after\s+that|finally)\b/i,
+    /\b(please|can you|could you|I need you to)\b.*\b(and|also|plus|then)\b/i,
+    /\b(everything|all\s+(the|of)|entire|whole|complete)\b/i,
+    /[,;].*\b(and|also|then)\b/i,
+  ];
+
+  const complexityScore = complexitySignals.filter(p => p.test(prompt)).length;
+  if (complexityScore >= 2) return "full";
+  if (prompt.length > 200) return "full";
+
   return "core";
 }
 
