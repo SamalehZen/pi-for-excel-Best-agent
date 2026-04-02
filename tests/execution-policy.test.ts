@@ -131,6 +131,9 @@ void test("classifies bridge and external tools as read-only non-workbook traffi
 
   assert.equal(getToolExecutionMode("extensions_manager", { action: "list" }), "read");
   assert.equal(getToolContextImpact("extensions_manager", { action: "list" }), "none");
+
+  assert.equal(getToolExecutionMode("delegate_task", { role: "stylist", task: "Format table" }), "read");
+  assert.equal(getToolContextImpact("delegate_task", { role: "stylist", task: "Format table" }), "none");
 });
 
 void test("classifies python_transform_range as workbook content mutation", () => {

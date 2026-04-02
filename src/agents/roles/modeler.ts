@@ -65,6 +65,5 @@ Efficiency:
     recentChanges: true,
   },
 
-  maxTurns: 12,
   skillsToPreload: ["financial-modeling"],
 };

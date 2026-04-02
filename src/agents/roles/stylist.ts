@@ -56,6 +56,5 @@ Efficiency:
     recentChanges: false,
   },
 
-  maxTurns: 7,
   skillsToPreload: [],
 };

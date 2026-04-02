@@ -22,7 +22,7 @@ import {
 } from "../auth/proxy-validation.js";
 import { restoreCredentials } from "../auth/restore.js";
 import { collectCustomProviderRuntimeInfo } from "../auth/custom-gateways.js";
-import { invalidateBlueprint } from "../context/blueprint.js";
+import { invalidateBlueprint, peekBlueprint } from "../context/blueprint.js";
 import { ChangeTracker } from "../context/change-tracker.js";
 import {
   PI_EXPERIMENTAL_FEATURE_CHANGED_EVENT,
@@ -460,10 +460,15 @@ export async function initTaskpane(opts: {
     modelSwitchBehavior = await setStoredModelSwitchBehavior(settings, nextBehavior);
   };
 
+  let lastResolvedWorkbookId: string | null = null;
+
   const resolveWorkbookContext = async (): Promise<Awaited<ReturnType<typeof getWorkbookContext>>> => {
     try {
-      return await getWorkbookContext();
+      const context = await getWorkbookContext();
+      lastResolvedWorkbookId = context.workbookId;
+      return context;
     } catch {
+      lastResolvedWorkbookId = null;
       return {
         workbookId: null,
         workbookName: null,
@@ -855,7 +860,7 @@ export async function initTaskpane(opts: {
           getModel: () => runtimeAgent?.state.model ?? defaultModel,
           getAllTools: () => runtimeAgent?.state.tools ?? [],
           getApiKey: (provider: string) => runtimeAgent?.getApiKey?.(provider),
-          getWorkbookContext: () => undefined,
+          getWorkbookContext: () => peekBlueprint(lastResolvedWorkbookId),
         },
       }).filter(isRuntimeAgentTool);
 

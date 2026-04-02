@@ -133,7 +133,6 @@ User prompt
   - `systemPrompt`: specialized prompt text
   - `allowedTools`: list of tool names this role can use
   - `requiredContext`: what auto-context to inject (blueprint, selection, changes)
-  - `maxTurns`: maximum inner loop iterations (safety limit)
   - `skillsToPreload`: skills to auto-load (e.g. `financial-modeling` for Modeler)
 - **Roles to define:** analyst, builder, stylist, template-builder, researcher, modeler, debugger
 - **Export:** `SUB_AGENT_ROLES` registry, `SubAgentRole` type, `getRole(id)` lookup
@@ -148,12 +147,11 @@ User prompt
     task: string;                    // natural language task description
     context?: string;                // additional context from orchestrator
     parentModel?: string;            // inherit model from orchestrator
-    maxTurns?: number;               // override role default
   }
 
   interface SubAgentResult {
     roleId: string;
-    status: "completed" | "failed" | "max_turns_reached";
+    status: "completed" | "failed";
     summary: string;                 // human-readable summary of what was done
     toolCallCount: number;
     turnsUsed: number;
@@ -172,7 +170,7 @@ User prompt
   - Must trigger `workbook_history` checkpoints for mutations
   - Must respect execution mode (Auto/Confirm)
   - Must respect tool output truncation
-  - Inner loop capped at `maxTurns` (default: 15) to prevent runaway
+  - Inner loop runs until completion, explicit failure, or user cancellation
 
 #### Task 1.3: delegate_task tool
 - **File:** `src/tools/delegate-task.ts`

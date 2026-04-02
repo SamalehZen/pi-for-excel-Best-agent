@@ -131,9 +131,7 @@ export function createDelegateTaskTool(
 
       const statusLabel = result.status === "completed"
         ? "completed"
-        : result.status === "max_turns_reached"
-          ? "completed (max turns)"
-          : "failed";
+        : "failed";
 
       const errorSection = result.errors.length > 0
         ? `\n\nErrors:\n${result.errors.map((e) => `- ${e}`).join("\n")}`

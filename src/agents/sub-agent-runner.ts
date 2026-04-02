@@ -31,8 +31,7 @@ import type {
 import { getRole } from "./roles.js";
 import { getErrorMessage } from "../utils/errors.js";
 
-const DEFAULT_MAX_TURNS = 10;
-const ABSOLUTE_MAX_TURNS = 15;
+const DEFAULT_SUB_AGENT_INACTIVITY_TIMEOUT_MS = 120_000;
 
 export interface SubAgentRunnerDependencies {
   streamFn: StreamFn;
@@ -43,6 +42,66 @@ export interface SubAgentRunnerDependencies {
   beforeToolCall?: (context: BeforeToolCallContext, signal?: AbortSignal) => Promise<BeforeToolCallResult | undefined>;
   afterToolCall?: (context: AfterToolCallContext, signal?: AbortSignal) => Promise<AfterToolCallResult | undefined>;
   workbookContext?: string;
+  inactivityTimeoutMs?: number;
+  runAgentLoopImpl?: typeof runAgentLoop;
+}
+
+function createInactivityWatchdog(
+  callerSignal: AbortSignal | undefined,
+  timeoutMs: number,
+): {
+  signal: AbortSignal;
+  touch: () => void;
+  stop: () => void;
+  didTimeout: () => boolean;
+} {
+  const controller = new AbortController();
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  let timedOut = false;
+
+  const clear = () => {
+    if (timeoutId !== undefined) {
+      clearTimeout(timeoutId);
+      timeoutId = undefined;
+    }
+  };
+
+  const arm = () => {
+    if (controller.signal.aborted) return;
+    clear();
+    timeoutId = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, timeoutMs);
+  };
+
+  const abortFromCaller = () => {
+    controller.abort();
+  };
+
+  if (callerSignal) {
+    if (callerSignal.aborted) {
+      controller.abort();
+    } else {
+      callerSignal.addEventListener("abort", abortFromCaller, { once: true });
+    }
+  }
+
+  arm();
+
+  const stop = () => {
+    clear();
+    if (callerSignal) {
+      callerSignal.removeEventListener("abort", abortFromCaller);
+    }
+  };
+
+  return {
+    signal: controller.signal,
+    touch: arm,
+    stop,
+    didTimeout: () => timedOut,
+  };
 }
 
 function filterToolsForRole(
@@ -81,7 +140,7 @@ function buildSubAgentSystemPrompt(
     + `- **Read once**: if the workbook blueprint is in context, do NOT call get_workbook_overview again. Read target ranges once, then work from memory.\n`
     + `- **No unnecessary verification**: do NOT re-read cells just to confirm a write succeeded — write_cells auto-verifies. Only re-read if you need the value for a subsequent formula.\n`
     + `- **Stop immediately** when the task is complete. Do not use remaining turns.\n`
-    + `- You have a maximum of ${role.maxTurns} turns — but fewer is better. Target: complete in ${Math.ceil(role.maxTurns * 0.5)} turns or less.\n`
+    + `- Work carefully — there is no fixed turn limit, but fewer tool calls and less churn are still better.\n`
     + `- When done, provide a brief summary of what you accomplished with cell references.\n`
     + `- If you encounter an error you cannot resolve, stop and report it.\n`
     + `- Do not ask the user questions — you are a background worker. Make reasonable decisions.`,
@@ -116,11 +175,6 @@ export async function runSubAgent(
     };
   }
 
-  const maxTurns = Math.min(
-    request.maxTurns ?? role.maxTurns ?? DEFAULT_MAX_TURNS,
-    ABSOLUTE_MAX_TURNS,
-  );
-
   const toolAllowList = request.tools && request.tools.length > 0
     ? request.tools.filter((t) => role.allowedTools.includes(t))
     : [...role.allowedTools];
@@ -146,6 +200,9 @@ export async function runSubAgent(
   );
 
   const convertToLlm = deps.convertToLlm ?? defaultConvertToLlm;
+  const runAgentLoopImpl = deps.runAgentLoopImpl ?? runAgentLoop;
+  const inactivityTimeoutMs = deps.inactivityTimeoutMs ?? DEFAULT_SUB_AGENT_INACTIVITY_TIMEOUT_MS;
+  const watchdog = createInactivityWatchdog(signal, inactivityTimeoutMs);
 
   let toolCallCount = 0;
   let turnsUsed = 0;
@@ -153,6 +210,8 @@ export async function runSubAgent(
   let lastAssistantText = "";
 
   const emit = (event: AgentEvent): void => {
+    watchdog.touch();
+
     if (event.type === "tool_execution_end") {
       toolCallCount += 1;
       if (event.isError) {
@@ -201,15 +260,7 @@ export async function runSubAgent(
     model: deps.model,
     convertToLlm,
     getApiKey: deps.getApiKey,
-    beforeToolCall: async (ctx, sig) => {
-      if (turnsUsed >= maxTurns) {
-        return { block: true, reason: `Sub-agent turn limit reached (${maxTurns} turns). Stopping execution.` };
-      }
-      if (deps.beforeToolCall) {
-        return deps.beforeToolCall(ctx, sig);
-      }
-      return undefined;
-    },
+    beforeToolCall: deps.beforeToolCall,
     afterToolCall: deps.afterToolCall,
     toolExecution: "sequential",
   };
@@ -221,16 +272,18 @@ export async function runSubAgent(
   } satisfies Message as AgentMessage;
 
   try {
-    await runAgentLoop(
+    await runAgentLoopImpl(
       [userPrompt],
       context,
       config,
       emit,
-      signal,
+      watchdog.signal,
       deps.streamFn,
     );
   } catch (error: unknown) {
-    const errMsg = getErrorMessage(error);
+    const errMsg = watchdog.didTimeout()
+      ? `Sub-agent timed out after ${inactivityTimeoutMs}ms of inactivity.`
+      : getErrorMessage(error);
     errors.push(errMsg);
 
     return {
@@ -242,15 +295,16 @@ export async function runSubAgent(
       turnsUsed,
       errors,
     };
+  } finally {
+    watchdog.stop();
   }
 
-  const status = turnsUsed >= maxTurns ? "max_turns_reached" : "completed";
   const summary = lastAssistantText || `${role.name} completed with ${toolCallCount} tool calls.`;
 
   return {
     roleId: role.id,
     roleName: role.name,
-    status,
+    status: "completed",
     summary,
     toolCallCount,
     turnsUsed,

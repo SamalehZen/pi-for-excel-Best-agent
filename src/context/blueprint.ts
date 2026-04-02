@@ -46,6 +46,11 @@ export function getBlueprintRevision(workbookId: string | null): number {
   return getRevisionForKey(normalizeWorkbookKey(workbookId));
 }
 
+/** Return the cached blueprint synchronously when already available. */
+export function peekBlueprint(workbookId: string | null): string | undefined {
+  return blueprintCacheByWorkbook.get(normalizeWorkbookKey(workbookId));
+}
+
 /** Get the workbook blueprint (cached per workbook identity when available). */
 export async function getBlueprint(workbookId?: string | null): Promise<string> {
   const resolvedWorkbookId = workbookId === undefined

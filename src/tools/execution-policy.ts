@@ -30,6 +30,9 @@ const ALWAYS_READ_TOOLS = new Set<string>([
   // Extension registry operations mutate local settings/runtime, not workbook content.
   "extensions_manager",
   "screenshot_range",
+  // delegate_task is orchestration only. Nested sub-agent tool calls acquire
+  // their own read/write coordinator locks as needed.
+  "delegate_task",
 ]);
 
 const ALWAYS_MUTATE_TOOLS = new Set<string>([
@@ -46,8 +49,6 @@ const ALWAYS_MUTATE_TOOLS = new Set<string>([
   "python_transform_range",
   // Arbitrary Office.js can mutate workbook content and structure.
   "execute_office_js",
-  // Sub-agents may call mutating tools internally.
-  "delegate_task",
 ]);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
