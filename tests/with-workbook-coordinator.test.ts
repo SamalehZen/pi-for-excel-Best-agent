@@ -16,6 +16,7 @@ import type {
   WorkbookOperationContext,
   WorkbookQueueSnapshot,
 } from "../src/workbook/coordinator.ts";
+import { createWorkbookCoordinator } from "../src/workbook/coordinator.ts";
 
 const GENERIC_PARAMS = Type.Object({});
 
@@ -334,6 +335,96 @@ void test("read-only tool paths never emit mutation events", async (t) => {
       assert.deepEqual(invalidatedWorkbookIds, []);
     });
   }
+});
+
+void test("delegate_task stays off the outer write lock so nested workbook writes can complete", async () => {
+  const coordinator = createWorkbookCoordinator();
+  const mutationEvents: WorkbookMutationEvent[] = [];
+  const invalidatedWorkbookIds: Array<string | null> = [];
+  const contextProvider = createContextProvider("url_sha256:delegate-safe");
+  let approvalCalls = 0;
+  let nestedFormatCalls = 0;
+
+  let wrappedFormatTool: AgentTool | null = null;
+
+  const delegateTool = makeTool("delegate_task", async () => {
+    if (!wrappedFormatTool) {
+      throw new Error("wrapped format tool missing");
+    }
+
+    const innerResult = await wrappedFormatTool.execute("tc-delegate-inner", {
+      range: "Sheet1!A1:B2",
+      format: { bold: true },
+    });
+
+    const innerText = innerResult.content[0]?.type === "text"
+      ? innerResult.content[0].text
+      : "nested mutation complete";
+
+    return {
+      content: [{ type: "text", text: `delegate complete: ${innerText}` }],
+      details: { echo: innerText },
+    };
+  });
+
+  const formatTool = makeTool("format_cells", () => {
+    nestedFormatCalls += 1;
+    return Promise.resolve({
+      content: [{ type: "text", text: "formatted" }],
+      details: { echo: "formatted" },
+    });
+  });
+
+  const wrapped = withWorkbookCoordinator(
+    [delegateTool, formatTool],
+    coordinator,
+    contextProvider,
+    {
+      onWriteCommitted: (event) => {
+        mutationEvents.push(event);
+        if (event.impact === "structure") {
+          invalidatedWorkbookIds.push(event.workbookId);
+        }
+      },
+    },
+    {
+      getExecutionMode: () => Promise.resolve("safe"),
+      requestMutationApproval: () => {
+        approvalCalls += 1;
+        return Promise.resolve(true);
+      },
+    },
+  );
+
+  const wrappedDelegate = wrapped[0];
+  wrappedFormatTool = wrapped[1] ?? null;
+
+  assert.ok(wrappedDelegate);
+  assert.ok(wrappedFormatTool);
+
+  const result = await Promise.race([
+    wrappedDelegate.execute("tc-delegate-outer", {
+      role: "stylist",
+      task: "Format the selected range",
+    }),
+    new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error("delegate_task timed out")), 1_000);
+    }),
+  ]);
+
+  const firstBlock = result.content[0];
+  assert.equal(firstBlock?.type, "text");
+  assert.match(firstBlock?.text ?? "", /delegate complete: formatted/u);
+  assert.equal(nestedFormatCalls, 1);
+  assert.equal(approvalCalls, 1);
+  assert.equal(mutationEvents.length, 1);
+  assert.equal(mutationEvents[0]?.toolName, "format_cells");
+  assert.equal(mutationEvents[0]?.impact, "content");
+  assert.deepEqual(invalidatedWorkbookIds, []);
+
+  const snapshot = coordinator.getSnapshot("url_sha256:delegate-safe");
+  assert.equal(snapshot.queuedWrites, 0);
+  assert.equal(snapshot.activeWrite, null);
 });
 
 void test("write failures do not emit mutation events", async () => {

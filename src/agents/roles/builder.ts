@@ -59,6 +59,5 @@ Efficiency:
     recentChanges: true,
   },
 
-  maxTurns: 10,
   skillsToPreload: ["power-user-patterns"],
 };

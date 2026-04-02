@@ -1291,7 +1291,7 @@ export function isFilesDeleteDetails(value: unknown): value is FilesDeleteDetail
 
 /* ── Delegate Task ─────────────────────────────────────────── */
 
-export type DelegateTaskStatus = "completed" | "failed" | "max_turns_reached";
+export type DelegateTaskStatus = "completed" | "failed";
 
 export interface DelegateTaskDetails {
   kind: "delegate_task";
